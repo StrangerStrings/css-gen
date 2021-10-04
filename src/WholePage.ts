@@ -1,10 +1,11 @@
-import { css, customElement, html, LitElement, property }
+import { css, customElement, html, internalProperty, LitElement, property }
 	from "lit-element";
 import {defaultStyles} from './defaultStyles';
+import './components/Component';
 
 @customElement('whole-page')
 /**
- * What it does
+ * The Page which will contain and surround our components
  */
 export class WholePage extends LitElement {
 
@@ -13,21 +14,28 @@ export class WholePage extends LitElement {
 		css`
 			.container {
 				height: 100%;
+				display: flex;
+				justify-content: space-between;
+				align-items: stretch;
 				padding: 40px;
 				background: peachpuff;
 			}
 		`
 	];
 
-	/**
-	 * a really good description of a prop
-	 */
-	@property() name: string = 'Unknown';
+	@property({type: String}) indexHtmlOption: string;
+	
+	@internalProperty() words: string[] = ["and", "what"];
+	// @internalProperty() words: string[] = ["hello", "world"];
 
 	render() {
+		var components = this.words.map((word) => 
+			html`<component-a word=${word}></component-a>`
+		);
+
 		return html`
 			<div class="container">
-				<h1>It's me, your Dad, ${this.name}!</h1>
+				${components}
 			</div>
 		`;
 	}
