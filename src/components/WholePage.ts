@@ -1,7 +1,8 @@
 import { css, customElement, html, internalProperty, LitElement, property }
 	from "lit-element";
-import {defaultStyles} from './defaultStyles';
-import './components/Component';
+import {defaultStyles} from '../defaultStyles';
+import './CssDoodle';
+import './Setup';
 
 @customElement('whole-page')
 /**

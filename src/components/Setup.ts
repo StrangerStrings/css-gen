@@ -4,8 +4,8 @@ import { defaultStyles } from "../defaultStyles";
 /**
  * Just one configurable component for use and reuse
  */
-@customElement("component-a")
-export class Component extends LitElement{
+@customElement("setup-page")
+export class SetupPage extends LitElement{
 	static styles = [
 		defaultStyles,
 		css`
@@ -23,7 +23,7 @@ export class Component extends LitElement{
 	];
 
 	@property({type: String}) word: string;
-	
+
   private onClick(ev: MouseEvent) {
 		console.log("cilcekd: ", ev.target, "the word", this.word);
 	}
