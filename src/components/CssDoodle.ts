@@ -1,37 +1,59 @@
 import { css, customElement, html, internalProperty, LitElement, property } from "lit-element";
 import { defaultStyles } from "../defaultStyles";
+import { classMap } from 'lit-html/directives/class-map';
+import { styleMap } from 'lit-html/directives/style-map';
+import { Doodle } from "../types";
 
 /**
- * Just one configurable component for use and reuse
+ * a blank element that takes a generated css string
+ * and displays the css picture/pattern/doodle
  */
 @customElement("css-doodle")
 export class CssDoodle extends LitElement{
 	static styles = [
 		defaultStyles,
 		css`
-			.box {
-				height: 100%;
-				padding: 15px 10px;
-				background: paleturquoise;
+			/* todo bg: change this to root (somehow) **/
+			.outer {
+				position: absolute;
+				transform: translate(-50%, 50%);
 			}
-			h1 {
-				color: orange; 
-				writing-mode: vertical-rl;
-				text-orientation: upright;
+			.inner {
+				position: relative;
+			}
+			.doodle {
+				
+			}
+			.doodle-inner {
+				
 			}
 		`
 	];
 
-	@property({type: String}) word: string;
+	@property({type: Object}) data: Doodle;
 	
-  private onClick(ev: MouseEvent) {
-		console.log("cilcekd: ", ev.target, "the word", this.word);
-	}
-
 	render() {
+		const doodleCss = new CSSStyleSheet();
+		doodleCss.replaceSync(this.data.css);
+		this.shadowRoot.adoptedStyleSheets
+			.push(...this.shadowRoot.adoptedStyleSheets, doodleCss);
+
+		// change this to the root (somehow)
+		const position = styleMap({
+			x: `${this.data.x}%`,
+			y: `${this.data.y}%`
+		});
+
+		//const classes = classMap({[this.cssClass]: true})
+
 		return html`
-			<div class="box" @click=${this.onClick}>
-				<h1>${this.word}</h1>
+			<div class="position" style=${position}>
+				<div class="opacity">
+					<div class="doodle ${this.data.cssClass}">
+						<div class="doodle-inner ${this.data.cssClassInner}"></div>
+						<span></span>
+					</div>
+				</div>
 			</div>
 		`;
 	}

@@ -2,24 +2,10 @@ import { css, customElement, html, internalProperty, LitElement, property } from
 import { defaultStyles } from "../defaultStyles";
 import { ChatGpt } from "../chatGpt/ChatGpt";
 import { styleMap } from 'lit-html/directives/style-map';
-import { Palette } from "../types";
+import { Doodle, Output, Palette } from "../types";
 import { parseColours, parseCss, parseCssClass } from "../chatGpt/Parsing";
 import { coloursRequest, cssRequestTemplate } from "../chatGpt/Requests";
 import { RandomElement } from "../Randomizer";
-
-type Output = {
-	background: string;
-	keys: Doodle[];
-}
-
-type Doodle = {
-	letter: string;
-	css: string;
-	cssClass: string;
-	x: number;
-	y: number;
-	speedModifier? :number;
-}
 
 const letters = [
 	'a','b','c','d','e',

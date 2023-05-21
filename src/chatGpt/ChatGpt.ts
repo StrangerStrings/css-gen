@@ -1,15 +1,8 @@
 import { Configuration, OpenAIApi } from "openai";
 
-export type PoemData = {
-	poem: string[];
-	randomLine: string;
-	summary: string;
-}
-
 /** Used to talk to chatGpt, specifically for requesting poems */
 export class ChatGpt {
 	_openai: OpenAIApi;
-	_linesPerPoem: number = 8;
 
 	constructor(key: string	) {
 		const configuration = new Configuration({

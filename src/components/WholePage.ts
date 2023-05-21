@@ -1,8 +1,12 @@
 import { css, customElement, html, internalProperty, LitElement, property }
 	from "lit-element";
 import {defaultStyles} from '../defaultStyles';
+import { styleMap } from 'lit-html/directives/style-map';
+
 import './CssDoodle';
 import './Setup';
+import { SetupPage } from "./Setup";
+import { Doodle, Output } from "../types";
 
 @customElement('whole-page')
 /**
@@ -24,19 +28,87 @@ export class WholePage extends LitElement {
 		`
 	];
 
-	@property({type: String}) indexHtmlOption: string;
-	
-	@internalProperty() words: string[] = ["and", "what"];
-	// @internalProperty() words: string[] = ["hello", "world"];
+	@internalProperty() _input?: Output;
 
-	render() {
-		var components = this.words.map((word) => 
-			html`<component-a word=${word}></component-a>`
-		);
+	doodlesBatch: 1|2 = 1;
+	maxDoodles = 50;
+
+	@internalProperty() doodles1: Doodle[] = [];
+	@internalProperty() doodles2: Doodle[] = [];
+	
+
+	connectedCallback(): void {
+		super.connectedCallback();
+  	window.addEventListener('keypress', this._funky.bind(this));
+	}
+
+	/** Main function: Creates new firework, adds it to the screen, manages batches */
+	_funky(ev: KeyboardEvent) {
+		if (!this._input) {
+			return;
+		}
+		const newFirework = this._createFirework(ev.key);
+		
+		const fireworksBatch = this.getCurrentBatch();
+		fireworksBatch.push(newFirework);
+
+		if (fireworksBatch.length >= this.maxDoodles) {
+			this.switchBatchAndClearFireworks();
+		} 
+
+		this.doodles1 = [...this.doodles1];
+		this.doodles2 = [...this.doodles2];
+	}
+
+	switchBatchAndClearFireworks() {
+		this.doodlesBatch = this.doodlesBatch == 1 ? 2 : 1;
+
+		const batchToEmpty = this.getCurrentBatch();
+		batchToEmpty.length = 0;
+	}
+
+	getCurrentBatch(): Doodle[] {
+		if (this.doodlesBatch == 1) {
+			return this.doodles1;
+		} else if (this.doodlesBatch == 2) {
+			return this.doodles2;
+		}
+	}
+
+	_createFirework(key: string): Doodle {
+		const doodle = this._input.keys[key];
+		return doodle;
+	}
+
+	_go (ev: Event) {
+		const setup = ev.target as SetupPage;
+		this._input = setup.output
+	}
+
+	_renderContent() {
+		if (!this._input) {
+			return html`<set-up @its-time=${this._go}></set-up>`;
+		}
+
+		const background = styleMap({background: `${this._input.background}`});
+		
+		// possible change .data to individual bits
+		var doodles1 = this.doodles1.map(doodle => 
+			html`<css-doodle .data=${doodle}></css-doodle>`);
+		var doodles2 = this.doodles2.map(doodle => 
+			html`<css-doodle .data=${doodle}></css-doodle>`);
 
 		return html`
-			<div class="container">
-				${components}
+			<div class="doodle-container" style=${background}>
+				${doodles1}
+				${doodles2}
+			</div>`;
+	}
+
+	render() {
+		return html`
+			<div class="page">
+				${this._renderContent()}
 			</div>
 		`;
 	}
