@@ -17,13 +17,17 @@ export class WholePage extends LitElement {
 	static styles = [
 		defaultStyles,
 		css`
-			.container {
+			.page {
 				height: 100%;
 				display: flex;
-				justify-content: space-between;
+				justify-content: center;
 				align-items: stretch;
-				padding: 40px;
-				background: peachpuff;
+				background: black;
+			}
+			.doodle-container {
+				
+			}
+			.container {
 			}
 		`
 	];
@@ -83,6 +87,7 @@ export class WholePage extends LitElement {
 	_go (ev: Event) {
 		const setup = ev.target as SetupPage;
 		this._input = setup.output
+		console.log(this._input);
 	}
 
 	_renderContent() {

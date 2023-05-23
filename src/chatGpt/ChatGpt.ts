@@ -13,6 +13,7 @@ export class ChatGpt {
 
 	/** Send message to chatgpt and return it's response */
   async chat(chat: string): Promise<string> {
+		return 'st';
     const response = await this._openai.createChatCompletion({
 			model: "gpt-3.5-turbo",
 			messages: [{role: "user", content: chat}],
@@ -21,7 +22,7 @@ export class ChatGpt {
 	} 
 
 	/** create a poem from a seed word/line, then request a summary and select a random line */
-	async getSeedAndCreatePoemAndWords(seed: string, style: string, darkmode: boolean): Promise<PoemData> {
+	async getSeedAndCreatePoemAndWords(seed: string, style: string, darkmode: boolean): Promise<any> {
 		const chat = `
 		choose a word
 		`;

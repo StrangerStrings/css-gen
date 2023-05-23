@@ -95,8 +95,9 @@ export class SetupPage extends LitElement{
 		const doodles: Doodle[] = [];
 
 		const promises = [];
-		letters.forEach((letter, idx) => {
-			const promise = async () => {
+		letters.forEach(async (letter, idx) => {
+			// const promise = async () => {
+				console.log('doing promise');
 				const colours = [
 					RandomElement(palette.colours),
 					RandomElement(palette.colours),
@@ -104,18 +105,27 @@ export class SetupPage extends LitElement{
 				];
 				const inspiration = this._inspiration[idx]
 				const doodle = await this._createSingleOutput(letter, colours, inspiration)
+				
+				console.log(doodle);
+				
 				doodles.push(doodle)
-			}
-			promises.push(promise)
+		//	}
+			//promises.push(promise)
 		});
+		//console.log(promises[0]);
+		console.log(doodles[0]);
+		
+		//todo bg: promises are not being completed/awaited
 
-		// await promises.all()
+		//await Promise.all(promises);
 
 		this.output = {
 			background: palette.background,
 			keys: doodles
 		};
-		this.dispatchEvent(new CustomEvent('its time'));
+		console.log('dispatching event');
+		
+		this.dispatchEvent(new CustomEvent('its-time'));
 
 		this._loading = false;
 	}
@@ -172,7 +182,7 @@ export class SetupPage extends LitElement{
 			<div class="page">
 				<h3 class="title">Css Visuals Generation</h3>
 				<div class="colours-container">
-					${this._renderColours}
+					${this._renderColours()}
 				</div>
 			</div>
 		`;
