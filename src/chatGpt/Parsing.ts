@@ -2,14 +2,14 @@ import { Palette } from "../types";
 
 export function parseColours(chatResponse: string): Palette[] {
   return [
-    {background: 'black', colours: [
-      'blue', 'purple', 'green', 'red', 'grey' 
-    ]},
     {background: 'grey', colours: [
       'pink', 'black', 'white', 'green', 'orange' 
     ]},
+    {background: 'black', colours: [
+      'blue', 'purple', 'green', 'red', 'grey' 
+    ]},
     {background: 'white', colours: [
-      'purple', 'green', 'white', 'orange', 'blue' 
+      'purple', 'green', 'grey', 'orange', 'blue' 
     ]},
   ]
   // match all hex codes as well as background

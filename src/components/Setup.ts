@@ -6,6 +6,7 @@ import { Doodle, Output, Palette } from "../types";
 import { parseColours, parseCss, parseCssClass } from "../chatGpt/Parsing";
 import { coloursRequest, cssRequestTemplate } from "../chatGpt/Requests";
 import { RandomElement } from "../Randomizer";
+import { createLetter, LetterConfig } from "./LoadingLetter";
 
 const letters = [
 	'a','b','c','d','e',
@@ -20,44 +21,53 @@ export class SetupPage extends LitElement{
 	static styles = [
 		defaultStyles,
 		css`
+			:host {
+				--grey: #575757;	
+			}
 			.page {
 				display: flex;
 				flex-direction: column;
 				padding: 5rem;
 				width: 100%;
-				gap: 1rem;
+				gap: 2rem;
 				align-items: center;
-				color: darkgray;
+				color: var(--grey);
+				overflow: hidden;
 			}
 			.title {
 				text-align: center;
-				font-size: 1rem;
+				font-size: 4rem;
 			}
 			.loading {
 				text-align: center;
-				font-size: .7rem;
+				font-size: 5rem;
 			}
 			.colours-container {
 				display: flex;
 				flex-direction: column;
-				gap: .2rem;
-				border: 2px solid darkgray solid;
-				border-radius: .5rem;
+				gap: 3.5rem;
+				padding: 2rem;
+				border: 2px solid ;
+				border-radius: 1rem;
+				min-height: 26.3rem;
+				min-width: 25.2rem;
 			}
 			.palette {
 				display: flex;
-				gap: .2rem;
-				padding: .3rem;
-				border: 1px solid darkgray solid;
-				border-radius: .3rem;
+				gap: .6rem;
+				padding:1rem;
+				border-radius: 1rem;
 				cursor: pointer;
 			}
 			.palette:hover {
-				border: 2px solid darkgray solid;
+				border: 10px solid darkgray solid;
 			}
 			.swatch {
-				height: 1rem;
-				width: 1rem;
+				height: 3rem;
+				width: 3rem;
+			}
+			.instructions {
+				font-size: 2rem;
 			}
 		`
 	];
@@ -69,9 +79,11 @@ export class SetupPage extends LitElement{
 	@internalProperty() _colours: Palette[] = [];
 	@internalProperty() _inspiration: string[] = [];
 
+	@internalProperty() _loadingLetters: LetterConfig[] = [];
+
 	connectedCallback(): void {
 		super.connectedCallback();
-		this._chatGpt = new ChatGpt('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');
+		this._chatGpt = new ChatGpt('b');
 		this._getColours();
 	}
 
@@ -79,6 +91,8 @@ export class SetupPage extends LitElement{
 		this._loading = true;
 
 		const coloursResponse = await this._chatGpt.chat(coloursRequest);
+    await new Promise((resolve) => setTimeout(resolve, 30000));
+
 		const colours = parseColours(coloursResponse);
 		this._colours = colours;
 
@@ -91,6 +105,7 @@ export class SetupPage extends LitElement{
 		const element = ev.target as HTMLElement;
 		const idx = Number(element.getAttribute('data-idx'));
 		const palette = this._colours[idx];
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
 		const doodles: Doodle[] = [];
 
@@ -152,7 +167,7 @@ export class SetupPage extends LitElement{
 
 	_renderColours() {
 		if (this._loading) {
-			return html`<div class="loading">loading...</div>`;
+			return html`<div class="loading">Loading...</div>`;
 		}
 		const colours = this._colours.map((c, i) => this._renderPalette(c, i));
 		return html`${colours}`;
@@ -177,6 +192,33 @@ export class SetupPage extends LitElement{
 		</div>`;
 	}
 
+	_renderLoadingBackground() {
+		if (!this._loading) {
+			return;
+		}
+		
+		if (!this._loadingLetters.length) {
+			this._loadingLetters = Array.from({ length: 500 }, () => createLetter());
+			// log
+		}
+
+		const letters = this._loadingLetters.map(letter => html`
+			<loading-letter
+			letter=${letter.letter}
+			x=${letter.x}
+				y=${letter.y}
+				time=${letter.time}
+				delay=${letter.delay}
+			></loading-letter>
+		`);
+
+// <div class="loading-letters">
+// </div>
+		return html`
+			${letters}
+		`
+	}
+
 	render() {
 		return html`
 			<div class="page">
@@ -184,6 +226,8 @@ export class SetupPage extends LitElement{
 				<div class="colours-container">
 					${this._renderColours()}
 				</div>
+				<p class="instructions">Pick a palette ^</p>
+				${this._renderLoadingBackground()}
 			</div>
 		`;
 	}

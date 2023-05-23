@@ -5,6 +5,7 @@ import { styleMap } from 'lit-html/directives/style-map';
 
 import './CssDoodle';
 import './Setup';
+import './LoadingLetter';
 import { SetupPage } from "./Setup";
 import { Doodle, Output } from "../types";
 
@@ -23,6 +24,7 @@ export class WholePage extends LitElement {
 				justify-content: center;
 				align-items: stretch;
 				background: black;
+				overflow: hidden;
 			}
 			.doodle-container {
 				
