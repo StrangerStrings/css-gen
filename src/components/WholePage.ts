@@ -25,7 +25,8 @@ export class WholePage extends LitElement {
 				background: black;
 			}
 			.doodle-container {
-				
+				height: 100%;
+				width: 100%;
 			}
 			.container {
 			}
@@ -35,11 +36,10 @@ export class WholePage extends LitElement {
 	@internalProperty() _input?: Output;
 
 	doodlesBatch: 1|2 = 1;
-	maxDoodles = 50;
+	maxDoodles = 20;
 
 	@internalProperty() doodles1: Doodle[] = [];
 	@internalProperty() doodles2: Doodle[] = [];
-	
 
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -52,6 +52,9 @@ export class WholePage extends LitElement {
 			return;
 		}
 		const newFirework = this._createFirework(ev.key);
+		if (!newFirework) {
+			return;
+		}
 		
 		const fireworksBatch = this.getCurrentBatch();
 		fireworksBatch.push(newFirework);
@@ -79,12 +82,14 @@ export class WholePage extends LitElement {
 		}
 	}
 
-	_createFirework(key: string): Doodle {
-		const doodle = this._input.keys[key];
+	_createFirework(key: string): Doodle|undefined {
+		const doodle = this._input.keys.find(ky => ky.letter == key);
 		return doodle;
 	}
 
 	_go (ev: Event) {
+		console.log('go1');
+		
 		const setup = ev.target as SetupPage;
 		this._input = setup.output
 		console.log(this._input);
@@ -97,12 +102,13 @@ export class WholePage extends LitElement {
 
 		const background = styleMap({background: `${this._input.background}`});
 		
-		// possible change .data to individual bits
 		var doodles1 = this.doodles1.map(doodle => 
 			html`<css-doodle .data=${doodle}></css-doodle>`);
-		var doodles2 = this.doodles2.map(doodle => 
-			html`<css-doodle .data=${doodle}></css-doodle>`);
-
+			var doodles2 = this.doodles2.map(doodle => 
+				html`<css-doodle .data=${doodle}></css-doodle>`);
+				
+			console.log(this.doodles1);
+				
 		return html`
 			<div class="doodle-container" style=${background}>
 				${doodles1}

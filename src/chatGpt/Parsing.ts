@@ -1,6 +1,24 @@
 import { Palette } from "../types";
+import { colourResponses } from "./mockColours";
+import { mockCss } from "./mockCss";
 
-export function parseColours(chatResponse: string): Palette[] {
+export function parseColours(chatResponse?: string): Palette[] {
+  function parsePalettes(text) {
+    let paletteBlocks = text.split("\n\n");
+    paletteBlocks = paletteBlocks.filter(i => i.includes('#'))
+    console.log(paletteBlocks.length);
+    
+    let palettes = paletteBlocks.map(block => {
+        let lines = block.split("\n");
+        let background = lines[1].match(/#[0-9A-Fa-f]{6}/)[0];
+        let colours = lines.slice(2).map(line => line.match(/#[0-9A-Fa-f]{6}/)[0]);
+        return { background, colours };
+    });
+    return palettes;
+  }
+  
+  return parsePalettes(colourResponses[0]);
+
   return [
     {background: 'black', colours: [
       'blue', 'purple', 'green', 'red', 'grey' 
@@ -12,87 +30,58 @@ export function parseColours(chatResponse: string): Palette[] {
       'purple', 'green', 'white', 'orange', 'blue' 
     ]},
   ]
-  // match all hex codes as well as background
 }
 
-export function parseCss(chatResponse: string): string {
-  return `
-.animated-shape {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  background: linear-gradient(120deg, #20bf55, #01baef);
-  border-radius: 70% 30% 50% 50%/50% 60% 40% 50%;
-  animation: move 5s ease-in-out infinite;
-}
+export function parseCss(chatResponse?: string): string {
+  function parseCSS(str) {
+    const codeBlockRegex = /```[\w]*([\s\S]*?)```/g;
+    const cssRegex = /(\.?\w+\s?(?:\:\w+)?\s?(?:\,\.?\w+\s?(?:\:\w+)?\s?)*\s?\{[^}]+\})/g;
+    
+    let codeBlockMatch = codeBlockRegex.exec(str);
+    
+    if (codeBlockMatch) {
+        let cssCode = codeBlockMatch[1].match(cssRegex);
+        console.log(cssCode);
+        
+        return cssCode.join('\n');
+    } else {
+        return str;
+    }
+  }
 
-.animated-shape::before, .animated-shape::after {
-  content: '';
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  background: #fff;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite alternate;
-}
 
-.animated-shape::before {
-  top: -40px;
-  left: 45%;
-}
+  if (chatResponse == 'a') {
+    return parseCSS(mockCss[0])
+  } 
+  if (chatResponse == 'b') {
+    return parseCSS(mockCss[1])
+  } 
+  if (chatResponse == 'c') {
+    return parseCSS(mockCss[2])
+  } 
+  if (chatResponse == 'd') {
+    return parseCSS(mockCss[3])
+  } 
+  if (chatResponse == 'e') {
+    return parseCSS(mockCss[4])
+  } 
 
-.animated-shape::after {
-  bottom: -40px;
-  right: 45%;
-}
 
-@keyframes move {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  
-  25% {
-    transform: translate(-150%, -50%) rotate(45deg);
-  }
-  
-  50% {
-    transform: translate(-150%, -150%) rotate(90deg);
-  }
-  
-  75% {
-    transform: translate(-50%, -150%) rotate(135deg);
-  }
-  
-  100% {
-    transform: translate(-50%, -50%) rotate(180deg);
-  }
-}
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-`
+  else { return parseCSS(mockCss[2])}
 }
 
 export function parseCssClass(css: string): string {
-let regex = /\.(\w+)/g;
-let matches;
-let classNames = new Set<string>();
+  let regex = /(?<![0-9])\.[\w-]+/g;
+  let classNames = css.match(regex).map(classWithDot => classWithDot.slice(1));
+  let uniqueClasses = [...new Set(classNames)]
 
-while ((matches = regex.exec(css)) !== null) {
-  classNames.add(matches[1]);
-}
-
-return classNames[0]
+  if (uniqueClasses.length == 1) {
+    return uniqueClasses[0];
+  }
+  else {
+    console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
+    console.log(css);
+    return '0or2classes';
+  }
 }

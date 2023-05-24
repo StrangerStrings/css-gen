@@ -5,11 +5,16 @@ import { styleMap } from 'lit-html/directives/style-map';
 import { Doodle, Output, Palette } from "../types";
 import { parseColours, parseCss, parseCssClass } from "../chatGpt/Parsing";
 import { coloursRequest, cssRequestTemplate } from "../chatGpt/Requests";
-import { RandomElement } from "../Randomizer";
+import { Random, RandomElement } from "../Randomizer";
 
 const letters = [
-	'a','b','c','d','e',
-	'f','g','h','i','j'
+	'a'
+	,'b'
+	,'c'
+	,'d'
+	// ,'e'
+	,'f'
+	// ,'g','h','i','j'
 ]
 
 /**
@@ -78,8 +83,8 @@ export class SetupPage extends LitElement{
 	async _getColours() {
 		this._loading = true;
 
-		const coloursResponse = await this._chatGpt.chat(coloursRequest);
-		const colours = parseColours(coloursResponse);
+		// const coloursResponse = await this._chatGpt.chat(coloursRequest);
+		const colours = parseColours();
 		this._colours = colours;
 
 		this._loading = false;
@@ -95,9 +100,8 @@ export class SetupPage extends LitElement{
 		const doodles: Doodle[] = [];
 
 		const promises = [];
-		letters.forEach(async (letter, idx) => {
-			// const promise = async () => {
-				console.log('doing promise');
+		letters.forEach((letter, idx) => {
+			const promise = new Promise(async (resolve) => {
 				const colours = [
 					RandomElement(palette.colours),
 					RandomElement(palette.colours),
@@ -106,24 +110,18 @@ export class SetupPage extends LitElement{
 				const inspiration = this._inspiration[idx]
 				const doodle = await this._createSingleOutput(letter, colours, inspiration)
 				
-				console.log(doodle);
-				
 				doodles.push(doodle)
-		//	}
-			//promises.push(promise)
+				resolve(null);
+			});
+			promises.push(promise)
 		});
-		//console.log(promises[0]);
-		console.log(doodles[0]);
-		
-		//todo bg: promises are not being completed/awaited
 
-		//await Promise.all(promises);
+		await Promise.all(promises);
 
 		this.output = {
 			background: palette.background,
 			keys: doodles
 		};
-		console.log('dispatching event');
 		
 		this.dispatchEvent(new CustomEvent('its-time'));
 
@@ -134,10 +132,13 @@ export class SetupPage extends LitElement{
 		letter: string, colours: string[], inspiration?: string
 	): Promise<Doodle> {
 		const cssRequest = cssRequestTemplate(colours, inspiration);
-		const cssResponse = await this._chatGpt.chat(cssRequest);
+		// const cssResponse = await this._chatGpt.chat(cssRequest);
 
-		const css = parseCss(cssResponse);
+		const css = parseCss(letter);
+		console.log(css);
+		
 		const cssClass = parseCssClass(css);
+		//const cssClass = 'animated-shape';
 
 		const [x, y] = this._computeCoordinates();
 		
@@ -147,7 +148,7 @@ export class SetupPage extends LitElement{
 	}
 
 	_computeCoordinates(): [number, number] {
-		return [50, 50];
+		return [Random(10,90), Random(10,90)];
 	}
 
 	_renderColours() {
