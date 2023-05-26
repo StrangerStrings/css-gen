@@ -14,7 +14,7 @@ export class CssDoodle extends LitElement{
 		defaultStyles,
 		css`
 			/* todo bg: change this to root (somehow) **/
-			.outer {
+			.position {
 				position: absolute;
 				transform: translate(-50%, 50%);
 			}

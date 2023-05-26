@@ -12,10 +12,10 @@ export type LetterConfig = {
 }
 
 export function createLetter(): LetterConfig {
-	const x = Random(0, 100);
-	const y = Random(0, 100);
+	const x = Random(-3, 103);
+	const y = Random(-3, 103);
 
-	const max = 3;
+	const max = 4;
 	const wavesOnScreen = .5;
 	const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-max/2, max/2);
 
@@ -40,6 +40,10 @@ export class LoadingLetter extends LitElement{
 		defaultStyles,
 		css`
 			:host {
+				position: absolute;
+				left: var(--pos-x);
+				bottom: var(--pos-y);
+				color: var(--color);
 			}
 			/* todo bg: change this to root (somehow) **/
 			.position {
@@ -86,11 +90,17 @@ export class LoadingLetter extends LitElement{
 	@property({type: Number}) time: number = 2;
 	@property({type: Number}) delay: number = 0;
 	
+	connectedCallback(): void {
+		super.connectedCallback();
+    this.style.setProperty('--pos-x', `${this.x}%`);
+    this.style.setProperty('--pos-y', `${this.y}%`);
+	}
+
 	render() {
-		const position = styleMap({
-			left: `${this.x}%`,
-			bottom: `${this.y}%`
-		});
+		// const position = styleMap({
+		// 	left: `${this.x}%`,
+		// 	bottom: `${this.y}%`
+		// });
 
 		const delay = styleMap({
 			'animationDelay': `${this.delay}s`,
@@ -98,7 +108,7 @@ export class LoadingLetter extends LitElement{
 		})
 
 		return html`
-			<div class="position" style=${position}>
+			<div class="position">
 				<div class="opacity" style=${delay}>
 					<div class="letter">${this.letter}</div>
 				</div>

@@ -75,6 +75,23 @@ export class SetupPage extends LitElement{
 			.instructions {
 				font-size: 2rem;
 			}
+
+			.loading-letters-container {
+				left: 0;
+				top: 0;
+				height: 100%;
+				width: 100%;
+				position: absolute;
+				overflow: hidden;
+			}
+			.loading-letters {
+				height: 100%;
+				width: 100%;
+				position: relative;
+			}
+			loading-letter {
+				--color: var(--grey)
+			}
 		`
 	];
 
@@ -85,7 +102,8 @@ export class SetupPage extends LitElement{
 	@internalProperty() _colours: Palette[] = [];
 	@internalProperty() _inspiration: string[] = [];
 
-	@internalProperty() _loadingLetters: LetterConfig[] = [];
+	_loadingLetters: LetterConfig[] = 
+						Array.from({ length: 750 }, () => createLetter());
 
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -100,7 +118,10 @@ export class SetupPage extends LitElement{
 		const colours = parseColours();
 		this._colours = colours;
 
-		this._loading = false;
+		console.log(this._loadingLetters.filter(i => i.x < 10 && i.y < 10))
+
+
+		// this._loading = false;
 	}
 
   private async onClick(ev: MouseEvent) {
@@ -196,11 +217,6 @@ export class SetupPage extends LitElement{
 		if (!this._loading) {
 			return;
 		}
-		
-		if (!this._loadingLetters.length) {
-			this._loadingLetters = Array.from({ length: 500 }, () => createLetter());
-			// log
-		}
 
 		const letters = this._loadingLetters.map(letter => html`
 			<loading-letter
@@ -212,10 +228,12 @@ export class SetupPage extends LitElement{
 			></loading-letter>
 		`);
 
-// <div class="loading-letters">
-// </div>
-		return html`
-			${letters}
+return html`
+<div class="loading-letters-container">
+<div class="loading-letters">
+	${letters}
+</div>
+</div>
 		`
 	}
 
@@ -227,8 +245,8 @@ export class SetupPage extends LitElement{
 					${this._renderColours()}
 				</div>
 				<p class="instructions">Pick a palette ^</p>
-				${this._renderLoadingBackground()}
 			</div>
+			${this._renderLoadingBackground()}
 		`;
 	}
 
