@@ -27,7 +27,8 @@ export class WholePage extends LitElement {
 				overflow: hidden;
 			}
 			.doodle-container {
-				
+				height: 100%;
+				width: 100%;
 			}
 			.container {
 			}
@@ -37,36 +38,38 @@ export class WholePage extends LitElement {
 	@internalProperty() _input?: Output;
 
 	doodlesBatch: 1|2 = 1;
-	maxDoodles = 50;
+	maxDoodles = 20;
 
 	@internalProperty() doodles1: Doodle[] = [];
 	@internalProperty() doodles2: Doodle[] = [];
-	
 
 	connectedCallback(): void {
 		super.connectedCallback();
   	window.addEventListener('keypress', this._funky.bind(this));
 	}
 
-	/** Main function: Creates new firework, adds it to the screen, manages batches */
+	/** Main function: Creates new doodle, adds it to the screen, manages batches */
 	_funky(ev: KeyboardEvent) {
 		if (!this._input) {
 			return;
 		}
-		const newFirework = this._createFirework(ev.key);
+		const newDoodle = this._createDoodle(ev.key);
+		if (!newDoodle) {
+			return;
+		}
 		
-		const fireworksBatch = this.getCurrentBatch();
-		fireworksBatch.push(newFirework);
+		const doodlesBatch = this.getCurrentBatch();
+		doodlesBatch.push(newDoodle);
 
-		if (fireworksBatch.length >= this.maxDoodles) {
-			this.switchBatchAndClearFireworks();
+		if (doodlesBatch.length >= this.maxDoodles) {
+			this.switchBatchAndClearDoodles();
 		} 
 
 		this.doodles1 = [...this.doodles1];
 		this.doodles2 = [...this.doodles2];
 	}
 
-	switchBatchAndClearFireworks() {
+	switchBatchAndClearDoodles() {
 		this.doodlesBatch = this.doodlesBatch == 1 ? 2 : 1;
 
 		const batchToEmpty = this.getCurrentBatch();
@@ -81,12 +84,14 @@ export class WholePage extends LitElement {
 		}
 	}
 
-	_createFirework(key: string): Doodle {
-		const doodle = this._input.keys[key];
+	_createDoodle(key: string): Doodle|undefined {
+		const doodle = this._input.keys.find(ky => ky.letter == key);
 		return doodle;
 	}
 
 	_go (ev: Event) {
+		console.log('go1');
+		
 		const setup = ev.target as SetupPage;
 		this._input = setup.output
 		console.log(this._input);
@@ -99,12 +104,13 @@ export class WholePage extends LitElement {
 
 		const background = styleMap({background: `${this._input.background}`});
 		
-		// possible change .data to individual bits
 		var doodles1 = this.doodles1.map(doodle => 
 			html`<css-doodle .data=${doodle}></css-doodle>`);
-		var doodles2 = this.doodles2.map(doodle => 
-			html`<css-doodle .data=${doodle}></css-doodle>`);
-
+			var doodles2 = this.doodles2.map(doodle => 
+				html`<css-doodle .data=${doodle}></css-doodle>`);
+				
+			console.log(this.doodles1);
+				
 		return html`
 			<div class="doodle-container" style=${background}>
 				${doodles1}
