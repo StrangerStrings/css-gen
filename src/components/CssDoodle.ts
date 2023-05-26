@@ -14,9 +14,10 @@ export class CssDoodle extends LitElement{
 		defaultStyles,
 		css`
 			/* todo bg: change this to root (somehow) **/
-			.position {
+			:host {
 				position: absolute;
-				transform: translate(-50%, 50%);
+				left: var(--pos-x);
+				bottom: var(--pos-y);
 			}
 			.inner {
 				position: relative;
@@ -31,23 +32,20 @@ export class CssDoodle extends LitElement{
 	];
 
 	@property({type: Object}) data: Doodle;
-	
+
+	connectedCallback(): void {
+		super.connectedCallback();
+    this.style.setProperty('--pos-x', `${this.data.x}%`);
+    this.style.setProperty('--pos-y', `${this.data.y}%`);
+	}
+
 	render() {
 		const doodleCss = new CSSStyleSheet();
 		doodleCss.replaceSync(this.data.css);
 		this.shadowRoot.adoptedStyleSheets
 			.push(...this.shadowRoot.adoptedStyleSheets, doodleCss);
 
-		// change this to the root (somehow)
-		const position = styleMap({
-			x: `${this.data.x}%`,
-			y: `${this.data.y}%`
-		});
-
-		//const classes = classMap({[this.cssClass]: true})
-
 		return html`
-			<div class="position" style=${position}>
 				<div class="opacity">
 					<div class="doodle ${this.data.cssClass}">
 						<div class="doodle-inner ${this.data.cssClassInner}"></div>

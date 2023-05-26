@@ -33,20 +33,19 @@ export function parseColours(chatResponse?: string): Palette[] {
 }
 
 export function parseCss(chatResponse?: string): string {
-  function parseCSS(str) {
-    const codeBlockRegex = /```[\w]*([\s\S]*?)```/g;
-    const cssRegex = /(\.?\w+\s?(?:\:\w+)?\s?(?:\,\.?\w+\s?(?:\:\w+)?\s?)*\s?\{[^}]+\})/g;
+  function parseCSS(str: string) {
+    // quick replace :after with ::after - sometimes gpt gets it wrong
+    let newStr = str.replace(/([a-z]):(before|after)/g, "$1::$2");
+
+    console.log(str);
     
-    let codeBlockMatch = codeBlockRegex.exec(str);
+    // pulls out any css blocks that are div, span or .any-class followed by { some:Css; }
+    // and separately any @keyframes { 0%{stuff} 100%{stuff} } blocks
+    const regex = /((div|span|\.[\w-]+(::before|::after)?)(,\s*(div|span|\.[\w-]+(::before|::after)?))*\s*\{[^}]*?\})|(@keyframes\s+[\w-]+\s*\{(\s*\d+%?\s*\{[^}]*\}\s*)*\})/gs;
+    const matches = newStr.match(regex);
     
-    if (codeBlockMatch) {
-        let cssCode = codeBlockMatch[1].match(cssRegex);
-        console.log(cssCode);
-        
-        return cssCode.join('\n');
-    } else {
-        return str;
-    }
+    console.log(matches.join('\n'));
+    return matches.join(' \n ');
   }
 
 
@@ -65,23 +64,33 @@ export function parseCss(chatResponse?: string): string {
   if (chatResponse == 'e') {
     return parseCSS(mockCss[4])
   } 
+  if (chatResponse == 'f') {
+    return parseCSS(mockCss[5])
+  } 
 
 
 
-  else { return parseCSS(mockCss[2])}
+  else { return parseCSS(mockCss[6])}
 }
 
 export function parseCssClass(css: string): string {
-  let regex = /(?<![0-9])\.[\w-]+/g;
-  let classNames = css.match(regex).map(classWithDot => classWithDot.slice(1));
-  let uniqueClasses = [...new Set(classNames)]
-
-  if (uniqueClasses.length == 1) {
-    return uniqueClasses[0];
-  }
-  else {
-    console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
+  try {
+    let regex = /(?<![0-9])\.[\w-]+/g;
+    let classNames = css.match(regex).map(classWithDot => classWithDot.slice(1));
+    let uniqueClasses = [...new Set(classNames)]
+    if (uniqueClasses.length == 1) {
+      console.log(uniqueClasses[0]);
+      
+      return uniqueClasses[0];
+    }
+  } catch  (err) {
+    console.error(err.message);
     console.log(css);
-    return '0or2classes';
   }
+
+  // else {
+  //   console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
+  //   console.log(css);
+  //   return '0or2classes';
+  // }
 }

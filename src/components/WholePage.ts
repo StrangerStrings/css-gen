@@ -8,6 +8,7 @@ import './Setup';
 import './LoadingLetter';
 import { SetupPage } from "./Setup";
 import { Doodle, Output } from "../types";
+import { Random } from "../Randomizer";
 
 @customElement('whole-page')
 /**
@@ -20,15 +21,13 @@ export class WholePage extends LitElement {
 		css`
 			.page {
 				height: 100%;
-				display: flex;
-				justify-content: center;
-				align-items: stretch;
 				background: black;
 				overflow: hidden;
 			}
 			.doodle-container {
 				height: 100%;
 				width: 100%;
+				position: relative;
 			}
 			.container {
 			}
@@ -86,6 +85,9 @@ export class WholePage extends LitElement {
 
 	_createDoodle(key: string): Doodle|undefined {
 		const doodle = this._input.keys.find(ky => ky.letter == key);
+		const variance = 10;
+		doodle.x += Random(-variance,variance);
+		doodle.y += Random(-variance,variance);
 		return doodle;
 	}
 

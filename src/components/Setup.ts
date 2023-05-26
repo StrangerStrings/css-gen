@@ -14,9 +14,9 @@ const letters = [
 	,'b'
 	,'c'
 	,'d'
-	// ,'e'
+	,'e'
 	,'f'
-	// ,'g','h','i','j'
+	,'g','h','i','j'
 ]
 
 /**
@@ -98,7 +98,7 @@ export class SetupPage extends LitElement{
 	@property({type: Object}) output: Output;
 
 	@internalProperty() _chatGpt?: ChatGpt;
-	@internalProperty() _loading: boolean = false;
+	@internalProperty() _loading: number = 0;
 	@internalProperty() _colours: Palette[] = [];
 	@internalProperty() _inspiration: string[] = [];
 
@@ -112,7 +112,8 @@ export class SetupPage extends LitElement{
 	}
 
 	async _getColours() {
-		this._loading = true;
+		this._loading = 1;
+
 
 		// const coloursResponse = await this._chatGpt.chat(coloursRequest);
 		const colours = parseColours();
@@ -121,16 +122,16 @@ export class SetupPage extends LitElement{
 		console.log(this._loadingLetters.filter(i => i.x < 10 && i.y < 10))
 
 
-		// this._loading = false;
+		this._loading = 0;
 	}
 
   private async onClick(ev: MouseEvent) {
-		this._loading = true;
+		this._loading = 2;
 
 		const element = ev.target as HTMLElement;
 		const idx = Number(element.getAttribute('data-idx'));
 		const palette = this._colours[idx];
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
 
 		const doodles: Doodle[] = [];
 
@@ -160,7 +161,7 @@ export class SetupPage extends LitElement{
 		
 		this.dispatchEvent(new CustomEvent('its-time'));
 
-		this._loading = false;
+		this._loading = 0;
 	}
 
 	async _createSingleOutput(
@@ -170,7 +171,7 @@ export class SetupPage extends LitElement{
 		// const cssResponse = await this._chatGpt.chat(cssRequest);
 
 		const css = parseCss(letter);
-		console.log(css);
+		// console.log(css);
 		
 		const cssClass = parseCssClass(css);
 		//const cssClass = 'animated-shape';
@@ -187,7 +188,7 @@ export class SetupPage extends LitElement{
 	}
 
 	_renderColours() {
-		if (this._loading) {
+		if (this._loading > 0) {
 			return html`<div class="loading">Loading...</div>`;
 		}
 		const colours = this._colours.map((c, i) => this._renderPalette(c, i));
@@ -214,7 +215,7 @@ export class SetupPage extends LitElement{
 	}
 
 	_renderLoadingBackground() {
-		if (!this._loading) {
+		if (this._loading < 2) {
 			return;
 		}
 
