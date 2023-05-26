@@ -91,7 +91,7 @@ export class SetupPage extends LitElement{
 		this._loading = true;
 
 		const coloursResponse = await this._chatGpt.chat(coloursRequest);
-    await new Promise((resolve) => setTimeout(resolve, 30000));
+    // await new Promise((resolve) => setTimeout(resolve, 30000));
 
 		const colours = parseColours(coloursResponse);
 		this._colours = colours;
@@ -105,7 +105,7 @@ export class SetupPage extends LitElement{
 		const element = ev.target as HTMLElement;
 		const idx = Number(element.getAttribute('data-idx'));
 		const palette = this._colours[idx];
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 20000));
 
 		const doodles: Doodle[] = [];
 

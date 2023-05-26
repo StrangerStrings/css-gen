@@ -1,8 +1,6 @@
 import { css, customElement, html, internalProperty, LitElement, property, TemplateResult } from "lit-element";
 import { defaultStyles } from "../defaultStyles";
-import { classMap } from 'lit-html/directives/class-map';
 import { styleMap } from 'lit-html/directives/style-map';
-import { Doodle } from "../types";
 import { Random, RandomElement } from "../Randomizer";
 
 export type LetterConfig = {
@@ -16,6 +14,7 @@ export type LetterConfig = {
 export function createLetter(): LetterConfig {
 	const x = Random(0, 100);
 	const y = Random(0, 100);
+
 	const max = 3;
 	const wavesOnScreen = .5;
 	const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-max/2, max/2);
@@ -31,10 +30,6 @@ export function createLetter(): LetterConfig {
 	};
 }
 
-function XandY(): [number, number] {
-	return [0,50];
-} 
-
 /**
  * a blank element that takes a generated css string
  * and displays the css picture/pattern/doodle
@@ -45,7 +40,6 @@ export class LoadingLetter extends LitElement{
 		defaultStyles,
 		css`
 			:host {
-				font-size:3rem;
 			}
 			/* todo bg: change this to root (somehow) **/
 			.position {
@@ -53,16 +47,16 @@ export class LoadingLetter extends LitElement{
 				transform: translate(-50%, 50%);
 			}
 			.opacity {
-					animation-name: fadeIn;
+					animation-name: wave;
 					animation-iteration-count: infinite;
 					animation-fill-mode: forwards;
 					opacity: 0;
 				}
 			.letter {
-
+				font-size:3rem;
 			}
 
-			@keyframes fadeIn {
+			@keyframes wave {
 				0% {
 					opacity: 0;
 				}
@@ -89,9 +83,8 @@ export class LoadingLetter extends LitElement{
 	@property({type: String}) letter: string = "";
 	@property({type: Number}) x: number = 0;
 	@property({type: Number}) y: number = 0;
-	@property({type: Number}) delay: number = 0;
 	@property({type: Number}) time: number = 2;
-
+	@property({type: Number}) delay: number = 0;
 	
 	render() {
 		const position = styleMap({
@@ -103,9 +96,6 @@ export class LoadingLetter extends LitElement{
 			'animationDelay': `${this.delay}s`,
 			'animationDuration': `${this.time}s`,
 		})
-
-		console.log(this.letter);
-		
 
 		return html`
 			<div class="position" style=${position}>
