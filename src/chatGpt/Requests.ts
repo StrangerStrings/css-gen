@@ -1,4 +1,10 @@
-export const coloursRequest = `
+export const coloursRequest = (dark?: boolean) => `
+  Can you make me a color palette.
+  It should consist of six colours plus an additional ${dark ? 'dark ':''}background colour.
+  They should be returned as hex codes.
+`.trim();
+
+export const coloursRequestOld = `
   Can you make me some color palettes.
   Each should consist of six colours plus an additional background colour.
   They should be returned as hex codes. 

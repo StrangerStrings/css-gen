@@ -13,20 +13,37 @@ export class CssDoodle extends LitElement{
 	static styles = [
 		defaultStyles,
 		css`
-			/* todo bg: change this to root (somehow) **/
 			:host {
 				position: absolute;
 				left: var(--pos-x);
 				bottom: var(--pos-y);
-			}
-			.inner {
-				position: relative;
+				transform: translate(-50%, 50%);
+
+				animation-name: wave;
+				animation-duration: 2s;
+				animation-iteration-count: 1;
+				animation-fill-mode: forwards;
+				opacity: 0;
 			}
 			.doodle {
-				
 			}
-			.doodle-inner {
-				
+
+			@keyframes wave {
+				0% {
+					opacity: 0;
+				}
+				5% {
+					opacity: 1;
+				}
+				15% {
+					opacity: 0.9;
+				}
+				60% {
+					opacity: 0.2;
+				}
+				100% {
+					opacity: 0;
+				}
 			}
 		`
 	];
@@ -46,12 +63,9 @@ export class CssDoodle extends LitElement{
 			.push(...this.shadowRoot.adoptedStyleSheets, doodleCss);
 
 		return html`
-				<div class="opacity">
-					<div class="doodle ${this.data.cssClass}">
-						<div class="doodle-inner ${this.data.cssClassInner}"></div>
-						<span></span>
-					</div>
-				</div>
+			<div class="doodle ${this.data.cssClass}">
+				<div class="doodle-inner ${this.data.cssClassInner}"></div>
+				<span></span>
 			</div>
 		`;
 	}

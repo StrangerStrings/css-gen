@@ -2,75 +2,33 @@ import { Palette } from "../types";
 import { colourResponses } from "./mockColours";
 import { mockCss } from "./mockCss";
 
-export function parseColours(chatResponse?: string): Palette[] {
-  function parsePalettes(text) {
-    let paletteBlocks = text.split("\n\n");
-    paletteBlocks = paletteBlocks.filter(i => i.includes('#'))
-    console.log(paletteBlocks.length);
-    
-    let palettes = paletteBlocks.map(block => {
-        let lines = block.split("\n");
-        let background = lines[1].match(/#[0-9A-Fa-f]{6}/)[0];
-        let colours = lines.slice(2).map(line => line.match(/#[0-9A-Fa-f]{6}/)[0]);
-        return { background, colours };
-    });
-    return palettes;
-  }
-  
-  return parsePalettes(colourResponses[0]);
+export function parseColours(chatResponse?: string): Palette {
+  chatResponse = chatResponse ?? colourResponses[0];
 
-  return [
-    {background: 'grey', colours: [
-      'pink', 'black', 'white', 'green', 'orange' 
-    ]},
-    {background: 'black', colours: [
-      'blue', 'purple', 'green', 'red', 'grey' 
-    ]},
-    {background: 'white', colours: [
-      'purple', 'green', 'grey', 'orange', 'blue' 
-    ]},
-  ]
+  const regex = /#[0-9A-Fa-f]{6}/g;
+  const matches = chatResponse.match(regex);
+  const colours = Array.from(matches);
+  const background = colours.pop();
+
+  return {
+    colours, background
+  };
 }
 
 export function parseCss(chatResponse?: string): string {
-  function parseCSS(str: string) {
-    // quick replace :after with ::after - sometimes gpt gets it wrong
-    let newStr = str.replace(/([a-z]):(before|after)/g, "$1::$2");
+  console.log(chatResponse);  
 
-    console.log(str);
-    
-    // pulls out any css blocks that are div, span or .any-class followed by { some:Css; }
-    // and separately any @keyframes { 0%{stuff} 100%{stuff} } blocks
-    const regex = /((div|span|\.[\w-]+(::before|::after)?)(,\s*(div|span|\.[\w-]+(::before|::after)?))*\s*\{[^}]*?\})|(@keyframes\s+[\w-]+\s*\{(\s*\d+%?\s*\{[^}]*\}\s*)*\})/gs;
-    const matches = newStr.match(regex);
-    
-    console.log(matches.join('\n'));
-    return matches.join(' \n ');
-  }
+  // quick replace :after with ::after - sometimes gpt gets it wrong
+  chatResponse = chatResponse.replace(/([a-z]):(before|after)/g, "$1::$2");
+  
+  // pulls out any css blocks that are div, span or .any-class followed by { some:Css; }
+  // and separately any @keyframes { 0%{stuff} 100%{stuff} } blocks
+  const regex = /((div|span|\.[\w-]+(::before|::after)?)(,\s*(div|span|\.[\w-]+(::before|::after)?))*\s*\{[^}]*?\})|(@keyframes\s+[\w-]+\s*\{(\s*\d+%?\s*\{[^}]*\}\s*)*\})/gs;
+  const cssBlocks = chatResponse.match(regex);
 
-
-  if (chatResponse == 'a') {
-    return parseCSS(mockCss[0])
-  } 
-  if (chatResponse == 'b') {
-    return parseCSS(mockCss[1])
-  } 
-  if (chatResponse == 'c') {
-    return parseCSS(mockCss[2])
-  } 
-  if (chatResponse == 'd') {
-    return parseCSS(mockCss[3])
-  } 
-  if (chatResponse == 'e') {
-    return parseCSS(mockCss[4])
-  } 
-  if (chatResponse == 'f') {
-    return parseCSS(mockCss[5])
-  } 
-
-
-
-  else { return parseCSS(mockCss[6])}
+  const css = cssBlocks.join('\n');
+  console.log(css);
+  return css;
 }
 
 export function parseCssClass(css: string): string {

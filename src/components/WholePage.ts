@@ -5,31 +5,25 @@ import { styleMap } from 'lit-html/directives/style-map';
 
 import './CssDoodle';
 import './Setup';
-import './LoadingLetter';
+import './LoadingLetters';
 import { SetupPage } from "./Setup";
 import { Doodle, Output } from "../types";
 import { Random } from "../Randomizer";
 
 @customElement('whole-page')
 /**
- * The Page which will contain and surround our components
+ * Recieves doodles from Setup cmp and listens to keypresses
+ * and then renders relavant doodle on screen 
  */
 export class WholePage extends LitElement {
 
 	static styles = [
 		defaultStyles,
 		css`
-			.page {
-				height: 100%;
-				background: black;
-				overflow: hidden;
-			}
 			.doodle-container {
 				height: 100%;
 				width: 100%;
 				position: relative;
-			}
-			.container {
 			}
 		`
 	];
@@ -37,18 +31,18 @@ export class WholePage extends LitElement {
 	@internalProperty() _input?: Output;
 
 	doodlesBatch: 1|2 = 1;
-	maxDoodles = 20;
+	maxDoodles = 30;
 
 	@internalProperty() doodles1: Doodle[] = [];
 	@internalProperty() doodles2: Doodle[] = [];
 
 	connectedCallback(): void {
 		super.connectedCallback();
-  	window.addEventListener('keypress', this._funky.bind(this));
+  	window.addEventListener('keypress', this._dooDle.bind(this));
 	}
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
-	_funky(ev: KeyboardEvent) {
+	_dooDle(ev: KeyboardEvent) {
 		if (!this._input) {
 			return;
 		}
@@ -57,25 +51,36 @@ export class WholePage extends LitElement {
 			return;
 		}
 		
-		const doodlesBatch = this.getCurrentBatch();
+		const doodlesBatch = this._getCurrentBatch();
 		doodlesBatch.push(newDoodle);
 
 		if (doodlesBatch.length >= this.maxDoodles) {
-			this.switchBatchAndClearDoodles();
+			this._switchBatchAndClearDoodles();
 		} 
 
 		this.doodles1 = [...this.doodles1];
 		this.doodles2 = [...this.doodles2];
 	}
 
-	switchBatchAndClearDoodles() {
+	_createDoodle(key: string): Doodle|undefined {
+		const doodle = this._input.keys.find(ky => ky.letter == key);
+		const variance = 10;
+
+		//todo: find way to add random each time
+		// without changing the base doodle's coords
+		doodle.x += Random(-variance,variance);
+		doodle.y += Random(-variance,variance);
+		return doodle;
+	}
+
+	_switchBatchAndClearDoodles() {
 		this.doodlesBatch = this.doodlesBatch == 1 ? 2 : 1;
 
-		const batchToEmpty = this.getCurrentBatch();
+		const batchToEmpty = this._getCurrentBatch();
 		batchToEmpty.length = 0;
 	}
 
-	getCurrentBatch(): Doodle[] {
+	_getCurrentBatch(): Doodle[] {
 		if (this.doodlesBatch == 1) {
 			return this.doodles1;
 		} else if (this.doodlesBatch == 2) {
@@ -83,23 +88,12 @@ export class WholePage extends LitElement {
 		}
 	}
 
-	_createDoodle(key: string): Doodle|undefined {
-		const doodle = this._input.keys.find(ky => ky.letter == key);
-		const variance = 10;
-		doodle.x += Random(-variance,variance);
-		doodle.y += Random(-variance,variance);
-		return doodle;
-	}
-
 	_go (ev: Event) {
-		console.log('go1');
-		
 		const setup = ev.target as SetupPage;
 		this._input = setup.output
-		console.log(this._input);
 	}
 
-	_renderContent() {
+	render() {
 		if (!this._input) {
 			return html`<set-up @its-time=${this._go}></set-up>`;
 		}
@@ -108,23 +102,13 @@ export class WholePage extends LitElement {
 		
 		var doodles1 = this.doodles1.map(doodle => 
 			html`<css-doodle .data=${doodle}></css-doodle>`);
-			var doodles2 = this.doodles2.map(doodle => 
-				html`<css-doodle .data=${doodle}></css-doodle>`);
-				
-			console.log(this.doodles1);
+		var doodles2 = this.doodles2.map(doodle => 
+			html`<css-doodle .data=${doodle}></css-doodle>`);
 				
 		return html`
 			<div class="doodle-container" style=${background}>
 				${doodles1}
 				${doodles2}
 			</div>`;
-	}
-
-	render() {
-		return html`
-			<div class="page">
-				${this._renderContent()}
-			</div>
-		`;
 	}
 }
