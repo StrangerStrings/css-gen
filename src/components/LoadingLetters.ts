@@ -1,7 +1,7 @@
 import { css, customElement, html, internalProperty, LitElement, property, TemplateResult } from "lit-element";
 import { defaultStyles } from "../defaultStyles";
 import { styleMap } from 'lit-html/directives/style-map';
-import { Random, RandomElement } from "../Randomizer";
+import { Random, RandomInt } from "../Randomizer";
 
 export type LetterConfig = {
 	letter: string;
@@ -84,6 +84,7 @@ export class LoadingLetters extends LitElement{
 
 	connectedCallback(): void {
 		super.connectedCallback();
+		// todo: maybe change this number based on screensize
 		const numberOfLetters = 750;
 		this._loadingLetters = Array.from(
 			{ length: numberOfLetters }, () => this._createLetter());
@@ -91,21 +92,45 @@ export class LoadingLetters extends LitElement{
 
 	/** Maths Yo */
 	_createLetter(): LetterConfig {
-		const x = Random(-3, 103);
-		const y = Random(-3, 103);
+		const x = Random(-1, 101);
+		const y = Random(-1, 101);
+		let letter = this._randomLetter(x);
 
-		const max = this.time;
+		// todo: probably put more explanation here
 		const wavesOnScreen = .5;
-		const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-max/2, max/2);
-
-		const delay = delayFraction*max/100;
-
-		const word = this.word
-		const letter = RandomElement(word.split(''));
+		const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-this.time/2, this.time/2);
+		const delay = delayFraction*this.time/100;
 
 		return {
 			letter, x, y, delay
 		};
+	}
+
+	/** Pick a letter from the word.
+	 * With it more likely to be from the start of the word when x is low
+	 * and more likely to be from the end of the word when x is high */
+	_randomLetter(x: number): string {
+		const screenSectionLength = 100/this.word.length;
+		
+		let index = Math.floor(x/screenSectionLength);
+		index += RandomInt(-1, 1, 2.5);
+		
+		// try fix out of bounds indexes
+		if (index < 0) {
+			index += RandomInt(1,3)
+		}
+		if (index > this.word.length) {
+			index -= RandomInt(1,3)
+		}
+		
+		const possibleLetters = this.word.split('');
+		const letter = possibleLetters[index];
+
+		// try again if still out of bounds
+		if (!letter) {
+			return this._randomLetter(x);
+		}
+		return letter;
 	}
 
 	_renderLetter(letter: LetterConfig): TemplateResult {
