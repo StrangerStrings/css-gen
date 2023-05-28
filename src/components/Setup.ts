@@ -2,7 +2,7 @@ import { css, customElement, html, internalProperty, LitElement, property } from
 import { defaultStyles } from "../defaultStyles";
 import { ChatGpt } from "../chatGpt/ChatGpt";
 import { styleMap } from 'lit-html/directives/style-map';
-import { Output, Palette } from "../types";
+import { Doodle, Palette } from "../types";
 
 /**
  * Setup page for choosing colours and generating doodles
@@ -33,7 +33,7 @@ export class SetupPage extends LitElement{
 			}
 			.loading {
 				text-align: center;
-				font-size: 5rem;
+				font-size: 3.2rem;
 			}
 			.colours-container {
 				display: flex;
@@ -80,10 +80,10 @@ export class SetupPage extends LitElement{
 		`
 	];
 
-	@property({type: Object}) output: Output;
+	@property({type: Object}) settings: {background: string, doodles: Doodle[]};
 
 	@internalProperty() _chatGpt?: ChatGpt;
-	@internalProperty() _loading: number = 2;
+	@internalProperty() _loading: number = 1;
 	@internalProperty() _colours: Palette[] = [];
 	@internalProperty() _inspiration: string[] = [];
 
@@ -105,12 +105,12 @@ export class SetupPage extends LitElement{
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const doodles = await this._chatGpt.getDoodles(palette.colours, 3);
+		const doodles = await this._chatGpt.getDoodles(palette.colours, 1);
 		this._loading = 0;
 
-		this.output = {
+		this.settings = {
 			background: palette.background,
-			keys: doodles
+			doodles
 		};
 		this.dispatchEvent(new CustomEvent('its-time'));
 	}

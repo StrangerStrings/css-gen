@@ -78,7 +78,7 @@ export class ChatGpt {
 		];
 		for (const letter of letters) {
 			const [css, cssClass] = RandomElement(csses);
-			const [x, y] = this._computeCoordinates();
+			const [x, y] = this._computeCoordinates(letter);
 			
 			doodles.push({
 				letter, css, cssClass, x, y, 
@@ -104,7 +104,24 @@ export class ChatGpt {
 		}
 	}
 
-	_computeCoordinates(): [number, number] {
-		return [Random(10,90), Random(10,90)];
+	_computeCoordinates(letter: string): [number, number] {
+		// upside down layout - so 0 index is at bottom of screen
+		const keyboard = [
+			['z','x','c','v','b','n','m',''],
+			['a','s','d','f','g','h','j','k','l'],
+			['q','w','e','r','t','y','u','i','o','p']
+		];
+
+		for (let rowIdx = 0; rowIdx < keyboard.length; rowIdx++) {
+			const row = keyboard[rowIdx];
+			const keyIdx = row.indexOf(letter);
+			if (keyIdx !== -1) {
+				const y = (rowIdx+1)/(keyboard.length+0.5);
+				const x = (keyIdx+1)/(row.length+0.5);
+				return [x*100, y*100];
+			}
+		}
+		//should never reach here
+		return [Random(0,100), Random(0,100)];
 	}
 }

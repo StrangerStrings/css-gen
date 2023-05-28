@@ -117,10 +117,10 @@ export class LoadingLetters extends LitElement{
 		
 		// try fix out of bounds indexes
 		if (index < 0) {
-			index += RandomInt(1,3)
+			index += RandomInt(1,2)
 		}
 		if (index > this.word.length) {
-			index -= RandomInt(1,3)
+			index -= RandomInt(1,2)
 		}
 		
 		const possibleLetters = this.word.split('');

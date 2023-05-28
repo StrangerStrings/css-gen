@@ -7,7 +7,7 @@ import './CssDoodle';
 import './Setup';
 import './LoadingLetters';
 import { SetupPage } from "./Setup";
-import { Doodle, Output } from "../types";
+import { Doodle } from "../types";
 import { Random } from "../Randomizer";
 
 @customElement('whole-page')
@@ -29,13 +29,15 @@ export class WholePage extends LitElement {
 		`
 	];
 
-	@internalProperty() _input?: Output;
-
+	
 	doodlesBatch: 1|2 = 1;
 	maxDoodles = 30;
-
+	
+	doodlesPool: Doodle[] = [];
 	@internalProperty() doodles1: Doodle[] = [];
 	@internalProperty() doodles2: Doodle[] = [];
+
+	@internalProperty() _background?: string;
 
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -44,9 +46,6 @@ export class WholePage extends LitElement {
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
 	_dooDle(ev: KeyboardEvent) {
-		if (!this._input) {
-			return;
-		}
 		const newDoodle = this._createDoodle(ev.key);
 		if (!newDoodle) {
 			return;
@@ -64,7 +63,7 @@ export class WholePage extends LitElement {
 	}
 
 	_createDoodle(key: string): Doodle|undefined {
-		const doodle = this._input.keys.find(ky => ky.letter == key);
+		const doodle = this.doodlesPool.find(ky => ky.letter == key);
 
 		// changing it's position randomly with each key press
 		// but keeping it 'magnetically' drawn to it's initial position (maths yo)
@@ -96,15 +95,16 @@ export class WholePage extends LitElement {
 
 	_go (ev: Event) {
 		const setup = ev.target as SetupPage;
-		this._input = setup.output
+		this._background = setup.settings.background;
+		this.doodlesPool = setup.settings.doodles;
 	}
 
 	render() {
-		if (!this._input) {
+		if (!this.doodlesPool.length) {
 			return html`<set-up @its-time=${this._go}></set-up>`;
 		}
 
-		const background = styleMap({background: `${this._input.background}`});
+		const background = styleMap({background: `${this._background}`});
 		
 		var doodles1 = this.doodles1.map(doodle => 
 			html`<css-doodle .data=${doodle}></css-doodle>`);
