@@ -21,9 +21,10 @@ export class WholePage extends LitElement {
 		defaultStyles,
 		css`
 			.doodle-container {
+				position: relative;
 				height: 100%;
 				width: 100%;
-				position: relative;
+				overflow: hidden;
 			}
 		`
 	];
@@ -64,12 +65,17 @@ export class WholePage extends LitElement {
 
 	_createDoodle(key: string): Doodle|undefined {
 		const doodle = this._input.keys.find(ky => ky.letter == key);
-		const variance = 10;
 
-		//todo: find way to add random each time
-		// without changing the base doodle's coords
-		doodle.x += Random(-variance,variance);
-		doodle.y += Random(-variance,variance);
+		// changing it's position randomly with each key press
+		// but keeping it 'magnetically' drawn to it's initial position (maths yo)
+		const variance = 8;
+
+		const xMovement = doodle.xInitial - doodle.x;
+		doodle.x += Random((-variance+xMovement), (variance+xMovement), variance/3);
+
+		const yMovement = doodle.yInitial - doodle.y;
+		doodle.y += Random((-variance+yMovement), (variance+yMovement), variance/3);
+
 		return doodle;
 	}
 

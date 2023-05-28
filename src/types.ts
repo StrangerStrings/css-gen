@@ -3,7 +3,6 @@ export type Palette = {
 	colours: string[];
 }
 
-
 export type Output = {
 	background: string;
 	keys: Doodle[];
@@ -16,5 +15,7 @@ export type Doodle = {
 	cssClassInner?: string;
 	x: number;
 	y: number;
+	xInitial: number;
+	yInitial: number;
 	speedModifier? :number;
 }

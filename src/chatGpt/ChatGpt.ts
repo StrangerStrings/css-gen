@@ -54,6 +54,8 @@ export class ChatGpt {
 		const csses: Array<[string, string]> = [];
 		for (let i = 0; i < count; i++) {
 			const promise = new Promise(async (resolve) => {
+				await new Promise((resolve) => setTimeout(resolve, i*200));
+				
 				const colours = [
 					RandomElement(allColours),
 					RandomElement(allColours),
@@ -78,7 +80,10 @@ export class ChatGpt {
 			const [css, cssClass] = RandomElement(csses);
 			const [x, y] = this._computeCoordinates();
 			
-			doodles.push({letter, css, cssClass, x, y});
+			doodles.push({
+				letter, css, cssClass, x, y, 
+				xInitial: x, yInitial: y
+			});
 		}
 
 		return doodles;

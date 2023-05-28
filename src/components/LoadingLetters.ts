@@ -68,9 +68,10 @@ export class LoadingLetters extends LitElement{
 				left:50%;
 				top: 40%;
 				transform: translate(-50%, 50%);
-				opacity: 0.8;
+				opacity: 0.9;
 				font-size: 4.2rem;
 				letter-spacing: 0.7rem;
+				user-select: none;
 			}
 			
 		`

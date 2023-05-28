@@ -62,14 +62,17 @@ export class SetupPage extends LitElement{
 				height: 3rem;
 				width: 3rem;
 				border-radius: 10%;
-				transition: opacity .2s ease-in;
-				opacity: 0.8;
+				transition: opacity .15s ease-in;
+				opacity: 0.9;
 			}
 			.palette:hover .swatch{
 				opacity: 1;
 			}
 			.instructions {
 				font-size: 2rem;
+			}
+			.hidden {
+				display: none;
 			}
 			loading-letters {
 				--color: var(--grey);
@@ -92,7 +95,7 @@ export class SetupPage extends LitElement{
 
 	async _getColours() {
 		this._loading = 1;
-		this._colours = await this._chatGpt.getColours(1);		
+		this._colours = await this._chatGpt.getColours(2);		
 		this._loading = 0;
 	}
 
@@ -102,14 +105,13 @@ export class SetupPage extends LitElement{
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const doodles = await this._chatGpt.getDoodles(palette.colours, 5);
+		const doodles = await this._chatGpt.getDoodles(palette.colours, 3);
 		this._loading = 0;
 
 		this.output = {
 			background: palette.background,
 			keys: doodles
 		};
-		
 		this.dispatchEvent(new CustomEvent('its-time'));
 	}
 
@@ -148,13 +150,15 @@ export class SetupPage extends LitElement{
 				></loading-letters>`;
 		}
 
+		const hideWhenLoading = this._loading && 'hidden';
+
 		return html`
 			<div class="page">
-				<h3 class="title">Css Visuals Generation</h3>
+				<h3 class="title">Css Generation</h3>
 				<div class="colours-container">
 					${this._renderColours()}
 				</div>
-				<p class="instructions">Pick a palette ^</p>
+				<p class="instructions ${hideWhenLoading}">Pick a palette ^</p>
 			</div>
 		`;
 	}
