@@ -33,6 +33,7 @@ export class ChatGpt {
 		const promises = [];
 		for (let i = 0; i < amount; i++) {
 			const promise = new Promise(async (resolve) => {
+				await new Promise((resolve) => setTimeout(resolve, i*200));
 				const dark = i%2 == 0;
 				const request = coloursRequest(dark);
 				const response = await this.chat(request);
@@ -48,14 +49,9 @@ export class ChatGpt {
 		return palettes;
 	}
 
-	async getDoodles(allColours: string[], count: number = 26): Promise<Doodle[]> {
-		const doodles: Doodle[] = [];
-
-		const letters = [
-			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
-		];
-
+	async getDoodles(allColours: string[], count: number = 4): Promise<Doodle[]> {
 		const promises = [];
+		const csses: Array<[string, string]> = [];
 		for (let i = 0; i < count; i++) {
 			const promise = new Promise(async (resolve) => {
 				const colours = [
@@ -64,31 +60,43 @@ export class ChatGpt {
 					RandomElement(allColours)
 				];
 				// const inspiration = this._inspiration[idx]
-				const letter = letters[i];
-				const doodle = await this._generateDoodle(letter, colours);
-				doodles.push(doodle);
+				const css = await this._generateCss(colours);
+				if (css) {
+					csses.push(css);
+				}
 				resolve(null);
 			});
 			promises.push(promise)
 		}
-
 		await Promise.all(promises);
+		
+		const doodles: Doodle[] = [];
+		const letters = [
+			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+		];
+		for (const letter of letters) {
+			const [css, cssClass] = RandomElement(csses);
+			const [x, y] = this._computeCoordinates();
+			
+			doodles.push({letter, css, cssClass, x, y});
+		}
+
 		return doodles;
 	}
 
-	async _generateDoodle(
-		letter: string, colours: string[], inspiration?: string
-	): Promise<Doodle> {
-		const request = cssRequest(colours, inspiration);
-		const response = await this.chat(request);
-		const css = parseCss(response);
-		const cssClass = parseCssClass(css);
-
-		const [x, y] = this._computeCoordinates();
-		
-		return {
-			letter, css, cssClass, x, y
-		};
+	async _generateCss(
+		colours: string[], inspiration?: string
+	): Promise<[string, string]|undefined> {
+		try {
+			const request = cssRequest(colours, inspiration);
+			const response = await this.chat(request);
+			
+			const css = parseCss(response);
+			const cssClass = parseCssClass(css);
+			return [css,cssClass];
+		} catch {
+			return;
+		}
 	}
 
 	_computeCoordinates(): [number, number] {

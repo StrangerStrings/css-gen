@@ -52,16 +52,21 @@ export class SetupPage extends LitElement{
 				margin: 1rem;
 				border-radius: 1rem;
 				cursor: pointer;
-				transition: all .15s ease-in-out;
+				transition: all .05s ease-in-out;
 			}
 			.palette:hover {
-				padding: 1.5rem;
-				margin: 0.5rem;
+				padding: 1.2rem;
+				margin: 0.8rem;
 			}
 			.swatch {
 				height: 3rem;
 				width: 3rem;
 				border-radius: 10%;
+				transition: opacity .2s ease-in;
+				opacity: 0.8;
+			}
+			.palette:hover .swatch{
+				opacity: 1;
 			}
 			.instructions {
 				font-size: 2rem;
@@ -97,7 +102,7 @@ export class SetupPage extends LitElement{
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const doodles = await this._chatGpt.getDoodles(palette.colours, 1);
+		const doodles = await this._chatGpt.getDoodles(palette.colours, 5);
 		this._loading = 0;
 
 		this.output = {
