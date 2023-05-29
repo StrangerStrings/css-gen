@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
-import { Doodle, Palette } from "../types";
+import { CssBits, Doodle, Palette } from "../types";
 import { coloursRequest, cssRequestTemplate as cssRequest } from "./Requests";
 import { parseColours, parseCss, parseCssClass } from "./Parsing";
 import { Random, RandomElement } from "../Randomizer";
@@ -51,7 +51,7 @@ export class ChatGpt {
 
 	async getDoodles(allColours: string[], count: number = 4): Promise<Doodle[]> {
 		const promises = [];
-		const csses: Array<[string, string]> = [];
+		const cssBits: CssBits[] = [];
 		for (let i = 0; i < count; i++) {
 			const promise = new Promise(async (resolve) => {
 				await new Promise((resolve) => setTimeout(resolve, i*200));
@@ -64,7 +64,7 @@ export class ChatGpt {
 				// const inspiration = this._inspiration[idx]
 				const css = await this._generateCss(colours);
 				if (css) {
-					csses.push(css);
+					cssBits.push(css);
 				}
 				resolve(null);
 			});
@@ -77,13 +77,11 @@ export class ChatGpt {
 			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 		];
 		for (const letter of letters) {
-			const [css, cssClass] = RandomElement(csses);
+			const css = RandomElement(cssBits);
 			const [x, y] = this._computeCoordinates(letter);
 			
-			doodles.push({
-				letter, css, cssClass, x, y, 
-				xInitial: x, yInitial: y
-			});
+			doodles.push({letter, ...css,
+				 x, xInitial: x, y, yInitial: y});
 		}
 
 		return doodles;
@@ -91,14 +89,15 @@ export class ChatGpt {
 
 	async _generateCss(
 		colours: string[], inspiration?: string
-	): Promise<[string, string]|undefined> {
+	): Promise<CssBits|undefined> {
 		try {
 			const request = cssRequest(colours, inspiration);
 			const response = await this.chat(request);
-			
+
 			const css = parseCss(response);
-			const cssClass = parseCssClass(css);
-			return [css,cssClass];
+			const [cssClass, cssClassInner] = parseCssClass(css);
+
+			return {css, cssClass, cssClassInner};
 		} catch {
 			return;
 		}

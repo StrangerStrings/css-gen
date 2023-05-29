@@ -7,8 +7,9 @@ export function parseColours(chatResponse?: string): Palette {
 
   const regex = /#[0-9A-Fa-f]{6}/g;
   const matches = chatResponse.match(regex);
-  const colours = Array.from(matches);
+  let colours = Array.from(matches);
   const background = colours.pop();
+  // colours = colours.slice(0,6);
 
   return {
     colours, background
@@ -31,24 +32,26 @@ export function parseCss(chatResponse?: string): string {
   return css;
 }
 
-export function parseCssClass(css: string): string {
+export function parseCssClass(css: string): [string, string?] {
   try {
     let regex = /(?<![0-9])\.[\w-]+/g;
     let classNames = css.match(regex).map(classWithDot => classWithDot.slice(1));
     let uniqueClasses = [...new Set(classNames)]
     if (uniqueClasses.length == 1) {
       console.log(uniqueClasses[0]);
-      
-      return uniqueClasses[0];
+      return [uniqueClasses[0]];
+    }
+    else if (uniqueClasses.length == 2) {
+      console.log(uniqueClasses[0], uniqueClasses[1]);
+      return [uniqueClasses[0], uniqueClasses[1]];
+    }
+    else {
+      console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
+      console.log(css);
+      return ['0or3classes'];
     }
   } catch  (err) {
     console.error(err.message);
     console.log(css);
   }
-
-  // else {
-  //   console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
-  //   console.log(css);
-  //   return '0or2classes';
-  // }
 }

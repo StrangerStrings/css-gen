@@ -95,7 +95,7 @@ export class SetupPage extends LitElement{
 
 	async _getColours() {
 		this._loading = 1;
-		this._colours = await this._chatGpt.getColours(2);		
+		this._colours = await this._chatGpt.getColours(3);		
 		this._loading = 0;
 	}
 
@@ -105,7 +105,7 @@ export class SetupPage extends LitElement{
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const doodles = await this._chatGpt.getDoodles(palette.colours, 1);
+		const doodles = await this._chatGpt.getDoodles(palette.colours, 13);
 		this._loading = 0;
 
 		this.settings = {

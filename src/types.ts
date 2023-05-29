@@ -14,3 +14,9 @@ export type Palette = {
 	background: string;
 	colours: string[];
 }
+
+export type CssBits = {
+	css: string;
+	cssClass: string;
+	cssClassInner?: string;
+}
