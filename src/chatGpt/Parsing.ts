@@ -62,3 +62,15 @@ export function parseCssClass(css: string): [string, string?] {
     console.log(css);
   }
 }
+
+export function parseAnimationTiming(chatResponse?: string): number[] {
+  let regex = /(?<=animation[^]*?)\d+(?=s)/g;
+  const numberStrings = chatResponse.match(regex);
+  const numbers: number[] = [];
+  for (const numberString of numberStrings) {
+    try {
+      numbers.push(Number(numberString));
+    } catch {}
+  }
+  return numbers;
+}

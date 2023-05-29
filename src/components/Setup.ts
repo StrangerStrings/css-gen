@@ -96,7 +96,7 @@ export class SetupPage extends LitElement{
 
 	async _getColours() {
 		this._loading = 1;
-		this._colours = await this._chatGpt.getColours(1);		
+		this._colours = await this._chatGpt.getColours(2 );		
 		this._loading = 0;
 	}
 
@@ -106,7 +106,8 @@ export class SetupPage extends LitElement{
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const doodles = await this._chatGpt.getDoodles(palette.colours, 13);
+		const css = await this._chatGpt.getDoodles(palette.colours, 13);
+		const doodles = this._chatGpt.tempCreateDoodle(css);
 		this._loading = 0;
 
 		if (this._debugMode) {
@@ -123,7 +124,7 @@ export class SetupPage extends LitElement{
 	}
 
 	_downloadCss(doodle: Doodle) {
-		let keys = ['rawCss', 'css', 'cssClass', 'cssClassInner', 'letter'];
+		let keys = ['rawCss', 'css', 'cssClass', 'cssClassInner','timing', 'letter'];
 		let values = keys.map(key => doodle[key]);
 		let data = values.join('\n- - - - - - - - - - - - - - - - - - - - -\n');
 		let blob = new Blob([data], { type: 'text/plain' });

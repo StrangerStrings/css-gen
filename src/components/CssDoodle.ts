@@ -20,7 +20,7 @@ export class CssDoodle extends LitElement{
 				transform: translate(-50%, 50%);
 
 				animation-name: wave;
-				animation-duration: 2s;
+				animation-duration: var(--timing);
 				animation-iteration-count: 1;
 				animation-fill-mode: forwards;
 				opacity: 0;
@@ -35,11 +35,14 @@ export class CssDoodle extends LitElement{
 				5% {
 					opacity: 1;
 				}
-				15% {
+				30% {
+					opacity: 1;
+				}
+				50% {
 					opacity: 0.9;
 				}
-				60% {
-					opacity: 0.2;
+				75% {
+					opacity: 0.7;
 				}
 				100% {
 					opacity: 0;
@@ -52,8 +55,10 @@ export class CssDoodle extends LitElement{
 
 	connectedCallback(): void {
 		super.connectedCallback();
+
     this.style.setProperty('--pos-x', `${this.data.x}%`);
     this.style.setProperty('--pos-y', `${this.data.y}%`);
+    this.style.setProperty('--timing', `${this.data.timing[0]}s`);
 	}
 
 	render() {

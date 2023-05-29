@@ -1,7 +1,7 @@
 import { Configuration, OpenAIApi } from "openai";
 import { CssBits, Doodle, Palette } from "../types";
 import { coloursRequest, cssRequestTemplate as cssRequest } from "./Requests";
-import { parseColours, parseCss, parseCssClass } from "./Parsing";
+import { parseAnimationTiming, parseColours, parseCss, parseCssClass } from "./Parsing";
 import { Random, RandomElement } from "../Randomizer";
 
 /** Used to talk to chatGpt, specifically for requesting poems */
@@ -32,6 +32,7 @@ export class ChatGpt {
 
 		const promises = [];
 		for (let i = 0; i < amount; i++) {
+			
 			const promise = new Promise(async (resolve) => {
 				// stagger api calls by waiting
 				await new Promise((resolve) => setTimeout(resolve, i*500));
@@ -51,7 +52,7 @@ export class ChatGpt {
 		return palettes;
 	}
 
-	async getDoodles(allColours: string[], count: number = 4): Promise<Doodle[]> {
+	async getDoodles(allColours: string[], count: number = 4): Promise<CssBits[]> {
 		const promises = [];
 		const cssBits: CssBits[] = [];
 		for (let i = 0; i < count; i++) {
@@ -63,7 +64,7 @@ export class ChatGpt {
 					RandomElement(allColours),
 					RandomElement(allColours)
 				];
-				// const inspiration = this._inspiration[idx]
+				const inspiration = 'a fox'
 				const css = await this._generateCss(colours);
 				if (css) {
 					cssBits.push(css);
@@ -73,35 +74,7 @@ export class ChatGpt {
 			promises.push(promise)
 		}
 		await Promise.all(promises);
-		
-		const doodles: Doodle[] = [];
-		const letters = [
-			'a','b','c','d','e','f','g','h','i','j','k','l','m'
-			// ,'n','o','p','q','r','s','t','u','v','w','x','y','z'
-		];
-		for (let i = 0; i < letters.length; i++) {
-			const letter = letters[i];
-			let css: CssBits;
-			if (cssBits[i]) {
-				css = cssBits[i]
-			} else {
-				css = RandomElement(cssBits);
-			}
-			const [x, y] = this._computeCoordinates(letter);
-			
-			doodles.push({letter, ...css,
-				 x, xInitial: x, y, yInitial: y});
-		}
-
-		// for (const letter of letters) {
-		// 	const css = RandomElement(cssBits);
-		// 	const [x, y] = this._computeCoordinates(letter);
-			
-		// 	doodles.push({letter, ...css,
-		// 		 x, xInitial: x, y, yInitial: y});
-		// }
-
-		return doodles;
+		return cssBits;
 	}
 
 	async _generateCss(
@@ -113,8 +86,9 @@ export class ChatGpt {
 
 			const css = parseCss(response);
 			const [cssClass, cssClassInner] = parseCssClass(css);
+			const timing = parseAnimationTiming(css);
 
-			return {rawCss: response, css, cssClass, cssClassInner};
+			return {rawCss: response, css, cssClass, cssClassInner, timing};
 		} catch {
 			return;
 		}
@@ -139,5 +113,40 @@ export class ChatGpt {
 		}
 		//should never reach here
 		return [Random(0,100), Random(0,100)];
+	}
+
+	tempCreateDoodle(cssBits: CssBits[]): Doodle[] {
+
+		const doodles: Doodle[] = [];
+		const letters = [
+			'a','b','c','d','e','f','g','h','i','j','k','l','m'
+			,'n','o','p','q','r','s','t','u','v','w','x','y','z'
+		];
+		for (let i = 0; i < letters.length; i++) {
+			const letter = letters[i];
+			let css: CssBits;
+			if (cssBits[i]) {
+				console.log(letter, ' has itself in cssbits');
+				
+				css = cssBits[i]
+			} else {
+				console.log(letter, ' going for random');
+				css = RandomElement(cssBits);
+			}
+			const [x, y] = this._computeCoordinates(letter);
+			
+			doodles.push({letter, ...css,
+				 x, xInitial: x, y, yInitial: y});
+		}
+
+		// for (const letter of letters) {
+		// 	const css = RandomElement(cssBits);
+		// 	const [x, y] = this._computeCoordinates(letter);
+			
+		// 	doodles.push({letter, ...css,
+		// 		 x, xInitial: x, y, yInitial: y});
+		// }
+
+		return doodles;
 	}
 }
