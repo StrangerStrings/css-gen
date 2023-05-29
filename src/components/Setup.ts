@@ -197,7 +197,7 @@ export class SetupPage extends LitElement{
 				<div class="colours-container">
 					${this._renderColours()}
 				</div>
-				<p class="instructions ${hideWhenLoading}">Pick a palette ^</p>
+				<p class="instructions ${hideWhenLoading}">Pick a palette</p>
 			</div>
 		`;
 	}

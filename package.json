@@ -6,9 +6,14 @@
   "scripts": {
     "build:dev": "webpack --mode development",
     "start": "webpack serve --mode development --open chrome --port 8184"
-
   },
-  "keywords": ["Lit", "LitElement", "TypeScript", "Webpack", "Boilerplate"],
+  "keywords": [
+    "Lit",
+    "LitElement",
+    "TypeScript",
+    "Webpack",
+    "Boilerplate"
+  ],
   "author": "Ben Green",
   "license": "ISC",
   "devDependencies": {
