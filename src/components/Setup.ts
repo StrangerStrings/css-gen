@@ -86,6 +86,7 @@ export class SetupPage extends LitElement{
 	@internalProperty() _loading: number = 1;
 	@internalProperty() _colours: Palette[] = [];
 	@internalProperty() _inspiration: string[] = [];
+	@internalProperty() _debugMode: boolean = true;
 
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -95,7 +96,7 @@ export class SetupPage extends LitElement{
 
 	async _getColours() {
 		this._loading = 1;
-		this._colours = await this._chatGpt.getColours(3);		
+		this._colours = await this._chatGpt.getColours(1);		
 		this._loading = 0;
 	}
 
@@ -108,11 +109,31 @@ export class SetupPage extends LitElement{
 		const doodles = await this._chatGpt.getDoodles(palette.colours, 13);
 		this._loading = 0;
 
+		if (this._debugMode) {
+			for (const doodle of doodles) {
+				this._downloadCss(doodle)
+			}
+		}
+
 		this.settings = {
 			background: palette.background,
 			doodles
 		};
 		this.dispatchEvent(new CustomEvent('its-time'));
+	}
+
+	_downloadCss(doodle: Doodle) {
+		let keys = ['rawCss', 'css', 'cssClass', 'cssClassInner', 'letter'];
+		let values = keys.map(key => doodle[key]);
+		let data = values.join('\n- - - - - - - - - - - - - - - - - - - - -\n');
+		let blob = new Blob([data], { type: 'text/plain' });
+		let url = URL.createObjectURL(blob);
+
+		let link = document.createElement('a');
+		const fileName = doodle.cssClass || 'cssFile';
+		link.download = fileName+'.txt';
+		link.href = url;
+		link.click();
 	}
 
 	_renderColours() {

@@ -19,8 +19,13 @@ export function parseColours(chatResponse?: string): Palette {
 export function parseCss(chatResponse?: string): string {
   console.log(chatResponse);  
 
-  // quick replace :after with ::after - sometimes gpt gets it wrong
+  // quick replace :after with ::after - so main regex below works
   chatResponse = chatResponse.replace(/([a-z]):(before|after)/g, "$1::$2");
+
+  // replace @keyframes from {} and to {} with 0% {} and 100% {}
+  if (chatResponse.includes('to {') && chatResponse.includes('from {')) {
+    chatResponse = chatResponse.replace(/from \{/g, "0% {").replace(/to \{/g, "100% {");
+  }
   
   // pulls out any css blocks that are div, span or .any-class followed by { some:Css; }
   // and separately any @keyframes { 0%{stuff} 100%{stuff} } blocks
@@ -44,11 +49,13 @@ export function parseCssClass(css: string): [string, string?] {
     else if (uniqueClasses.length == 2) {
       console.log(uniqueClasses[0], uniqueClasses[1]);
       return [uniqueClasses[0], uniqueClasses[1]];
+    } else if (uniqueClasses.length > 2) {
+      return ['moreThan2Classes', uniqueClasses.join(' ,')];
     }
     else {
-      console.log('did not parse css as it has '+uniqueClasses.length+' classes.');
+      console.log('did not parse css as it has 0 classes.');
       console.log(css);
-      return ['0or3classes'];
+      return ['0classes'];
     }
   } catch  (err) {
     console.error(err.message);

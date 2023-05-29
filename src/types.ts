@@ -1,5 +1,6 @@
 export type Doodle = {
 	letter: string;
+	rawCss?: string;
 	css: string;
 	cssClass: string;
 	cssClassInner?: string;
@@ -16,6 +17,7 @@ export type Palette = {
 }
 
 export type CssBits = {
+	rawCss?: string;
 	css: string;
 	cssClass: string;
 	cssClassInner?: string;

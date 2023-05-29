@@ -33,7 +33,9 @@ export class ChatGpt {
 		const promises = [];
 		for (let i = 0; i < amount; i++) {
 			const promise = new Promise(async (resolve) => {
-				await new Promise((resolve) => setTimeout(resolve, i*200));
+				// stagger api calls by waiting
+				await new Promise((resolve) => setTimeout(resolve, i*500));
+				
 				const dark = i%2 == 0;
 				const request = coloursRequest(dark);
 				const response = await this.chat(request);
@@ -74,15 +76,30 @@ export class ChatGpt {
 		
 		const doodles: Doodle[] = [];
 		const letters = [
-			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+			'a','b','c','d','e','f','g','h','i','j','k','l','m'
+			// ,'n','o','p','q','r','s','t','u','v','w','x','y','z'
 		];
-		for (const letter of letters) {
-			const css = RandomElement(cssBits);
+		for (let i = 0; i < letters.length; i++) {
+			const letter = letters[i];
+			let css: CssBits;
+			if (cssBits[i]) {
+				css = cssBits[i]
+			} else {
+				css = RandomElement(cssBits);
+			}
 			const [x, y] = this._computeCoordinates(letter);
 			
 			doodles.push({letter, ...css,
 				 x, xInitial: x, y, yInitial: y});
 		}
+
+		// for (const letter of letters) {
+		// 	const css = RandomElement(cssBits);
+		// 	const [x, y] = this._computeCoordinates(letter);
+			
+		// 	doodles.push({letter, ...css,
+		// 		 x, xInitial: x, y, yInitial: y});
+		// }
 
 		return doodles;
 	}
@@ -97,7 +114,7 @@ export class ChatGpt {
 			const css = parseCss(response);
 			const [cssClass, cssClassInner] = parseCssClass(css);
 
-			return {css, cssClass, cssClassInner};
+			return {rawCss: response, css, cssClass, cssClassInner};
 		} catch {
 			return;
 		}
