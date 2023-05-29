@@ -5,6 +5,7 @@ import { styleMap } from 'lit-html/directives/style-map';
 
 import './CssDoodle';
 import './Setup';
+import './ApiInput';
 import './LoadingLetters';
 import { SetupPage } from "./Setup";
 import { Doodle } from "../types";

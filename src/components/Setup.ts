@@ -4,6 +4,9 @@ import { ChatGpt } from "../chatGpt/ChatGpt";
 import { styleMap } from 'lit-html/directives/style-map';
 import { Doodle, Palette } from "../types";
 
+
+const apiKey = "";
+
 /**
  * Setup page for choosing colours and generating doodles
  */
@@ -90,7 +93,13 @@ export class SetupPage extends LitElement{
 
 	connectedCallback(): void {
 		super.connectedCallback();
-		this._chatGpt = new ChatGpt('b');
+		if (apiKey) {
+			this._initiliseChatGpt(new CustomEvent('a', {detail: apiKey}))
+		}
+	}
+	
+	_initiliseChatGpt(ev: CustomEvent<string>) { 
+		this._chatGpt = new ChatGpt(ev.detail);
 		this._getColours();
 	}
 
@@ -170,6 +179,14 @@ export class SetupPage extends LitElement{
 				<loading-letters
 					time=${4}
 				></loading-letters>`;
+		}
+
+		if (!this._chatGpt) {
+			return html`<div class="page">
+				<api-input 
+					@api-key=${this._initiliseChatGpt}>
+				</api-input>
+			</div>`
 		}
 
 		const hideWhenLoading = this._loading && 'hidden';
