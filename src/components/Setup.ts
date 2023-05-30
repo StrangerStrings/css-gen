@@ -1,9 +1,9 @@
-import { css, customElement, html, internalProperty, LitElement, property } from "lit-element";
+import { css, customElement, html, internalProperty, LitElement, property, PropertyValues } from "lit-element";
 import { defaultStyles } from "../defaultStyles";
 import { ChatGpt } from "../chatGpt/ChatGpt";
 import { styleMap } from 'lit-html/directives/style-map';
-import { Doodle, Palette } from "../types";
-
+import { CssBits, Doodle, Palette } from "../types";
+import { RandomElement } from "../Randomizer";
 
 const apiKey = "";
 
@@ -21,62 +21,63 @@ export class SetupPage extends LitElement{
 			.page {
 				display: flex;
 				flex-direction: column;
-				padding: 5rem;
-				background: black;
 				width: 100%;
 				height: 100%;
-				gap: 2rem;
+				padding: 5rem;
+				gap: 2.5rem;
 				align-items: center;
-				color: var(--grey);
 				overflow: hidden;
+				background: black;
+				color: var(--grey);
 			}
 			.title {
 				text-align: center;
 				font-size: 4rem;
 			}
 			.loading {
-				text-align: center;
+				position: absolute;
+				bottom: 50%;
+				left: 50%;
+				transform: translate(-50%, 50%);
+				padding-bottom: 6rem;
 				font-size: 3.2rem;
+				text-align: center;
 			}
 			.colours-container {
 				display: flex;
 				flex-direction: column;
-				gap: 1.5rem;
+				gap: 2rem;
 				padding: 1rem;
-				border: 2px solid ;
-				border-radius: 1rem;
-				min-height: 26.3rem;
-				min-width: 25.2rem;
 			}
 			.palette {
 				display: flex;
 				gap: .6rem;
+				margin: 0.2rem;
 				padding: 1rem;
-				margin: 1rem;
 				border-radius: 1rem;
 				cursor: pointer;
 				transition: all .05s ease-in-out;
 			}
-			.palette:hover {
+			.palette:hover,
+			.palette:focus {
+				margin: 0rem;
 				padding: 1.2rem;
-				margin: 0.8rem;
 			}
 			.swatch {
 				height: 3rem;
 				width: 3rem;
 				border-radius: 10%;
-				transition: opacity .15s ease-in;
 				opacity: 0.9;
+				transition: opacity .15s ease-in;
 			}
-			.palette:hover .swatch{
+			.palette:hover .swatch,
+			.palette:focus .swatch {
 				opacity: 1;
 			}
 			.instructions {
 				font-size: 2rem;
 			}
-			.hidden {
-				display: none;
-			}
+			api-input,
 			loading-letters {
 				--color: var(--grey);
 			}
@@ -88,35 +89,45 @@ export class SetupPage extends LitElement{
 	@internalProperty() _chatGpt?: ChatGpt;
 	@internalProperty() _loading: number = 1;
 	@internalProperty() _colours: Palette[] = [];
-	@internalProperty() _inspiration: string[] = [];
-	@internalProperty() _debugMode: boolean = true;
+
+	_inspiration: string[] = [];
+	/** If true, downloads CSS information. Useful for debugging css parsing issues */
+	_debugMode: boolean = false;
 
 	connectedCallback(): void {
 		super.connectedCallback();
 		if (apiKey) {
-			this._initiliseChatGpt(new CustomEvent('a', {detail: apiKey}))
+			this._initiliseChatGpt(apiKey);
 		}
 	}
 	
-	_initiliseChatGpt(ev: CustomEvent<string>) { 
-		this._chatGpt = new ChatGpt(ev.detail);
-		this._getColours();
+	_initiliseChatGpt(apiKey: string) { 
+		this._chatGpt = new ChatGpt(apiKey);
 	}
 
+  updated(change: PropertyValues): void {
+    super.updated(change);
+    if (change.has('_chatGpt') && this._chatGpt) {
+			this._getColours();
+    }
+  }
+
+	/** Generate list of possible colour palettes */
 	async _getColours() {
 		this._loading = 1;
-		this._colours = await this._chatGpt.getColours(2 );		
+		this._colours = await this._chatGpt.generateColours(3);		
 		this._loading = 0;
 	}
 
-  async _generateDoodles(ev: MouseEvent) {
+	/** Generate the doodles and start the visualizer */
+  async _getDoodles(ev: MouseEvent) {
 		const element = ev.target as HTMLElement;
 		const idx = Number(element.getAttribute('data-idx'));
 		const palette = this._colours[idx];
 		
 		this._loading = 2;
-		const css = await this._chatGpt.getDoodles(palette.colours, 13);
-		const doodles = this._chatGpt.tempCreateDoodle(css);
+		const css = await this._chatGpt.generateCss(palette.colours, 10);
+		const doodles = this._createDoodles(css);
 		this._loading = 0;
 
 		if (this._debugMode) {
@@ -132,6 +143,49 @@ export class SetupPage extends LitElement{
 		this.dispatchEvent(new CustomEvent('its-time'));
 	}
 
+	/** Create all doodle object from the generated and parsed Css */
+	_createDoodles(cssBits: CssBits[]): Doodle[] {
+		const doodles: Doodle[] = [];
+		const letters = [
+			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+		];
+		for (let i = 0; i < letters.length; i++) {
+			const letter = letters[i];
+			const [x, y] = this._computeCoordinates(letter);
+
+			let css = cssBits[i];
+			if (!css) {
+				css = RandomElement(cssBits);
+			}
+			doodles.push({letter, ...css,
+				 x, xInitial: x, y, yInitial: y});
+		}
+		return doodles;
+	}
+
+	/** position doodles on screen by their letter's position on the keyboard */
+	_computeCoordinates(letter: string): [number, number] {
+		// upside down layout - so 0 index is at bottom of screen
+		const keyboard = [
+			['z','x','c','v','b','n','m',''],
+			['a','s','d','f','g','h','j','k','l'],
+			['q','w','e','r','t','y','u','i','o','p']
+		];
+
+		for (let rowIdx = 0; rowIdx < keyboard.length; rowIdx++) {
+			const row = keyboard[rowIdx];
+			const keyIdx = row.indexOf(letter);
+			if (keyIdx !== -1) {
+				const y = (rowIdx+1)/(keyboard.length+0.5);
+				const x = (keyIdx+1)/(row.length+0.5);
+				return [x*100, y*100];
+			}
+		}
+		//should never reach here
+		return [50, 50];
+	}
+
+	/** Download useful css info in a text file */
 	_downloadCss(doodle: Doodle) {
 		let keys = ['rawCss', 'css', 'cssClass', 'cssClassInner','timing', 'letter'];
 		let values = keys.map(key => doodle[key]);
@@ -150,8 +204,13 @@ export class SetupPage extends LitElement{
 		if (this._loading > 0) {
 			return html`<div class="loading">Loading...</div>`;
 		}
+		
 		const colours = this._colours.map((c, i) => this._renderPalette(c, i));
-		return html`${colours}`;
+		return html`
+			<div class="colours-container">
+				${colours}
+			</div>
+			<p class="instructions">Pick a palette</p>`;
 	}
 
 	_renderPalette(palette: Palette, idx: number) {
@@ -164,8 +223,10 @@ export class SetupPage extends LitElement{
 
 		return html`
 			<div class="palette"
-				@click=${this._generateDoodles}
+				@click=${this._getDoodles}
+				@keyup=${(ev) => {if (ev.key == 'Enter') this._getDoodles(ev);}}
 				data-idx=${idx}
+				tabindex=${idx+1}
 				style=${styleMap({
 					background: palette.background
 				})}>
@@ -184,20 +245,15 @@ export class SetupPage extends LitElement{
 		if (!this._chatGpt) {
 			return html`<div class="page">
 				<api-input 
-					@api-key=${this._initiliseChatGpt}>
+					@api-key=${(ev: CustomEvent<string>) => this._initiliseChatGpt(ev.detail)}>
 				</api-input>
 			</div>`
 		}
 
-		const hideWhenLoading = this._loading && 'hidden';
-
 		return html`
 			<div class="page">
 				<h3 class="title">Css Generation</h3>
-				<div class="colours-container">
-					${this._renderColours()}
-				</div>
-				<p class="instructions ${hideWhenLoading}">Pick a palette</p>
+				${this._renderColours()}
 			</div>
 		`;
 	}

@@ -1,4 +1,4 @@
-import { css, customElement, html, internalProperty, LitElement, property }
+import { css, customElement, html, internalProperty, LitElement }
 	from "lit-element";
 import {defaultStyles} from '../defaultStyles';
 import { styleMap } from 'lit-html/directives/style-map';
@@ -14,7 +14,7 @@ import { Random } from "../Randomizer";
 @customElement('whole-page')
 /**
  * Recieves doodles from Setup cmp and listens to keypresses
- * and then renders relavant doodle on screen 
+ * and then renders relevant doodle on screen 
  */
 export class WholePage extends LitElement {
 
@@ -43,6 +43,12 @@ export class WholePage extends LitElement {
 	connectedCallback(): void {
 		super.connectedCallback();
   	window.addEventListener('keypress', this._dooDle.bind(this));
+	}
+
+	_start (ev: Event) {
+		const setup = ev.target as SetupPage;
+		this._background = setup.settings.background;
+		this.doodlesPool = setup.settings.doodles;
 	}
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
@@ -94,15 +100,9 @@ export class WholePage extends LitElement {
 		}
 	}
 
-	_go (ev: Event) {
-		const setup = ev.target as SetupPage;
-		this._background = setup.settings.background;
-		this.doodlesPool = setup.settings.doodles;
-	}
-
 	render() {
 		if (!this.doodlesPool.length) {
-			return html`<set-up @its-time=${this._go}></set-up>`;
+			return html`<set-up @its-time=${this._start}></set-up>`;
 		}
 
 		const background = styleMap({background: `${this._background}`});

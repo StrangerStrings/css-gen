@@ -1,5 +1,4 @@
-
-export const colourResponses = [
+export const mockColourResponses = [
 `
 Sure! Here's a color palette consisting of six colors plus a dark background color:
 
@@ -76,5 +75,5 @@ Background: #E8E8E8
 I hope these palettes inspire you!
 
   `
-]
+];
 

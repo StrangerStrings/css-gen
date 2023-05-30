@@ -10,6 +10,7 @@ export type Doodle = {
 	yInitial: number;
 	speedModifier? :number;
 	timing: number[];
+	cssVariables: string[][];
 }
 
 export type Palette = {
@@ -23,4 +24,5 @@ export type CssBits = {
 	cssClass: string;
 	cssClassInner?: string;
 	timing: number[];
+	cssVariables: string[][];
 }

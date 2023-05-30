@@ -73,11 +73,12 @@ export class LoadingLetters extends LitElement{
 				letter-spacing: 0.7rem;
 				user-select: none;
 			}
-			
 		`
 	];
 
+	/** The word to display in characters scattered across the screen */
 	@property({type: String}) word: string = "Loading";
+	/** How long the whole wave animation takes */
 	@property({type: Number}) time: number = 2;
 
 	@internalProperty() _loadingLetters: LetterConfig[] = [];
@@ -90,16 +91,13 @@ export class LoadingLetters extends LitElement{
 			{ length: numberOfLetters }, () => this._createLetter());
 	}
 
-	/** Maths Yo */
+	/** Create a random letter to form one small part of the wave */
 	_createLetter(): LetterConfig {
 		const x = Random(-1, 101);
 		const y = Random(-1, 101);
-		let letter = this._randomLetter(x);
 
-		// todo: probably put more explanation here
-		const wavesOnScreen = .5;
-		const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-this.time/2, this.time/2);
-		const delay = delayFraction*this.time/100;
+		const letter = this._randomLetter(x);
+		const delay = this._computeDelay(x, y);
 
 		return {
 			letter, x, y, delay
@@ -133,6 +131,16 @@ export class LoadingLetters extends LitElement{
 		return letter;
 	}
 
+	/** Larger x and y's give longer delays, this gives it the wave animation.
+	 * Extra randomness gives it a shimmer */
+	_computeDelay(x: number, y: number): number {
+		const wavesOnScreen = .5;
+		const delayFraction = (x+(y/3)) * wavesOnScreen + Random(-this.time/2, this.time/2);
+		const delay = delayFraction*this.time/100;
+		// todo: probably put more explanation here/Maths Yo
+		return delay;
+	}
+
 	_renderLetter(letter: LetterConfig): TemplateResult {
 		const position = styleMap({
 			left: `${letter.x}%`,
@@ -154,7 +162,6 @@ export class LoadingLetters extends LitElement{
 
 	render() {
 		const letters = this._loadingLetters.map(letter => this._renderLetter(letter));
-
 		return html`
 			<div class="letters-container">
 				<div class="word">${this.word}...</div>

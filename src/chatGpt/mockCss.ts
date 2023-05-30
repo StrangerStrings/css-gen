@@ -1,4 +1,4 @@
-export const mockCss = [`
+export const mockCssResponses = [`
 .interesting-class {
   position: relative;
   width: 200px;
@@ -423,5 +423,4 @@ With this code, our animated class will have a unique and eye-catching shape wit
 
 This CSS creates a circular shape with a unique border radius, adds pseudo elements with gradients for an interesting effect, and uses an animation to move the shape across the screen while rotating. The color scheme is used in the gradients and background color to tie everything together.`,
 ``
-
-]
+];
