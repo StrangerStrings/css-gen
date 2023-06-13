@@ -121,9 +121,13 @@ export class SetupPage extends LitElement{
 
 	/** Generate the doodles and start the visualizer */
   async _getDoodles(ev: MouseEvent) {
-		const element = ev.target as HTMLElement;
-		const idx = Number(element.getAttribute('data-idx'));
-		const palette = this._colours[idx];
+		const target = ev.target as HTMLElement;
+		const paletteElement = target.closest('.palette');
+		const idx = paletteElement?.getAttribute('data-idx');
+		if (!paletteElement || !idx || isNaN(Number(idx))) {
+			return;
+		}
+		const palette = this._colours[Number(idx)];
 		
 		this._loading = 2;
 		const css = await this._chatGpt.generateCss(palette.colours, 10);
