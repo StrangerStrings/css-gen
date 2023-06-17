@@ -7,11 +7,12 @@ import './CssDoodle';
 import './Setup';
 import './ApiInput';
 import './LoadingLetters';
+import './DrumEditor';
 import { SetupPage } from "./Setup";
 import { Doodle } from "../types";
 import { Random } from "../Randomizer";
 import { Metronome } from "../Metronome";
-import { DrumMachine } from "../DrumMachine";
+import { DrumMachine, DrumPattern } from "../DrumMachine";
 
 @customElement('whole-page')
 /**
@@ -32,6 +33,9 @@ export class WholePage extends LitElement {
 				width: 100%;
 				overflow: hidden;
 			}
+			[hidden] {
+				display: none;
+			}
 		`
 	];
 
@@ -41,6 +45,8 @@ export class WholePage extends LitElement {
 
 	metronome: Metronome;
 	drumMachine: DrumMachine;
+	@internalProperty() _showDrumEditor: boolean = true;
+	@internalProperty() _currentBeat?: number;
 	
 	doodlesPool: Doodle[] = [];
 	@internalProperty() doodles1: Doodle[] = [];
@@ -56,7 +62,7 @@ export class WholePage extends LitElement {
 
 	connectedCallback(): void {
 		super.connectedCallback();
-  	window.addEventListener('keypress', this._keyDoodle.bind(this));
+  	window.addEventListener('keyup', this._keyDoodle.bind(this));
 	}
 
 	_start (ev: Event) {
@@ -70,8 +76,23 @@ export class WholePage extends LitElement {
 	_keyDoodle(ev: KeyboardEvent) {
 		if (ev.key == ' ') {
 			this.metronome.stopstart();
+			this._currentBeat = undefined;
 			return;
 		}
+		if (ev.key == 'ArrowLeft') {
+			this.metronome.shift(-0.22);
+			return;
+		}
+		if (ev.key == 'ArrowRight') {
+			this.metronome.shift(0.22);
+			return;
+		}
+		
+		if (ev.key == '.') {
+			this._showDrumEditor = !this._showDrumEditor
+			return;
+		}
+		
 		this._dooDle(ev.key);
 	}
 
@@ -124,7 +145,13 @@ export class WholePage extends LitElement {
 		}
 	}
 
+	_drumMachineChanged(ev: CustomEvent<DrumPattern>) {
+		this.drumMachine.pattern = ev.detail;
+	}
+
 	_beat(beat: number) {
+		this._currentBeat = beat;
+
 		const drumsToPlay = this.drumMachine.onthebeat(beat);
 		for (const drum of drumsToPlay) {
 			this._dooDle(drum.letter);
@@ -147,6 +174,12 @@ export class WholePage extends LitElement {
 			<div class="doodle-container" style=${background}>
 				${doodles1}
 				${doodles2}
-			</div>`;
+			</div>
+			<drum-editor
+				?hidden=${!this._showDrumEditor}
+				@settings-changed=${this._drumMachineChanged}
+				currentBeat=${this._currentBeat}
+			></drum-editor>
+			`;
 	}
 }

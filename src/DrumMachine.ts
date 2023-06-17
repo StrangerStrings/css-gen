@@ -1,10 +1,10 @@
-type DrumPattern = boolean[][];
+export type DrumPattern = boolean[][];
 
 type Drum = {
   letter: string;
 }
 
-const pattern1 = [
+export const pattern1 = [
   [true, false, false],
   [true, true, false],
   [true, false, false],

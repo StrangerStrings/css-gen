@@ -52,6 +52,10 @@ export class Metronome {
     this.beatCounter = 1;
   }
 
+  shift(fraction: number) {
+    this.nextTickTime += this.tickLength * fraction;
+  }
+
   set bpm(newBpm: number) {
     this._bpm = newBpm;
     this.tickLength = 60.0 / this._bpm;
