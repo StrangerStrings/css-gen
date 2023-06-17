@@ -10,6 +10,8 @@ import './LoadingLetters';
 import { SetupPage } from "./Setup";
 import { Doodle } from "../types";
 import { Random } from "../Randomizer";
+import { Metronome } from "../Metronome";
+import { DrumMachine } from "../DrumMachine";
 
 @customElement('whole-page')
 /**
@@ -21,6 +23,9 @@ export class WholePage extends LitElement {
 	static styles = [
 		defaultStyles,
 		css`
+			:host {
+				cursor: none;
+			}
 			.doodle-container {
 				position: relative;
 				height: 100%;
@@ -33,27 +38,46 @@ export class WholePage extends LitElement {
 	
 	doodlesBatch: 1|2 = 1;
 	maxDoodles = 30;
+
+	metronome: Metronome;
+	drumMachine: DrumMachine;
 	
 	doodlesPool: Doodle[] = [];
 	@internalProperty() doodles1: Doodle[] = [];
 	@internalProperty() doodles2: Doodle[] = [];
 
 	@internalProperty() _background?: string;
+	
+	constructor() {
+		super();
+		this.metronome = new Metronome(120, (beat: number) => this._beat(beat));
+		this.drumMachine = new DrumMachine();
+	}
 
 	connectedCallback(): void {
 		super.connectedCallback();
-  	window.addEventListener('keypress', this._dooDle.bind(this));
+  	window.addEventListener('keypress', this._keyDoodle.bind(this));
 	}
 
 	_start (ev: Event) {
 		const setup = ev.target as SetupPage;
 		this._background = setup.settings.background;
 		this.doodlesPool = setup.settings.doodles;
+
+		this.metronome.start();
+	}
+
+	_keyDoodle(ev: KeyboardEvent) {
+		if (ev.key == ' ') {
+			this.metronome.stopstart();
+			return;
+		}
+		this._dooDle(ev.key);
 	}
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
-	_dooDle(ev: KeyboardEvent) {
-		const newDoodle = this._createDoodle(ev.key);
+	_dooDle(letter: string) {
+		const newDoodle = this._createDoodle(letter);
 		if (!newDoodle) {
 			return;
 		}
@@ -97,6 +121,13 @@ export class WholePage extends LitElement {
 			return this.doodles1;
 		} else if (this.doodlesBatch == 2) {
 			return this.doodles2;
+		}
+	}
+
+	_beat(beat: number) {
+		const drumsToPlay = this.drumMachine.onthebeat(beat);
+		for (const drum of drumsToPlay) {
+			this._dooDle(drum.letter);
 		}
 	}
 
