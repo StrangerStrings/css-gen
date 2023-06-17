@@ -3,6 +3,7 @@ import { CssBits, Palette } from "../types";
 import { coloursRequest, cssRequestTemplate as cssRequest } from "./Requests";
 import { parseAnimationTiming, parseColours, parseCss, parseCssClass, parseCssVariables } from "./Parsing";
 import { RandomElement } from "../Randomizer";
+import { mockResponses } from "./mockResponses";
 
 /** Used to talk to chatGpt and return types  */
 export class ChatGpt {
@@ -52,10 +53,12 @@ export class ChatGpt {
 		return palettes;
 	}
 
-	async generateCss(allColours: string[], count: number = 4): Promise<CssBits[]> {
+	async generateCss(allColours: string[] = ['a'], count: number = 4): Promise<CssBits[]> {
 		const cssBits: CssBits[] = [];
 
 		const promises = [];
+
+		count = mockResponses.length;
 		for (let i = 0; i < count; i++) {
 			const promise = new Promise(async (resolve) => {
 				// stagger api calls by waiting
@@ -67,7 +70,7 @@ export class ChatGpt {
 					RandomElement(allColours)
 				];
 				const inspiration = 'a fox'
-				const css = await this._generateOneCss(colours);
+				const css = await this._generateOneCss(colours, i);
 				if (css) {
 					cssBits.push(css);
 				}
@@ -80,10 +83,11 @@ export class ChatGpt {
 		return cssBits;
 	}
 
-	async _generateOneCss(colours: string[], inspiration?: string): Promise<CssBits|undefined> {
+	async _generateOneCss(colours: string[], i?: number, inspiration?: string): Promise<CssBits|undefined> {
 		try {
 			const request = cssRequest(colours, inspiration);
-			const response = await this.chat(request);
+			const response = mockResponses[i]
+			// const response = await this.chat(request);
 
 			const css = parseCss(response);
 			const [cssClass, cssClassInner] = parseCssClass(css);

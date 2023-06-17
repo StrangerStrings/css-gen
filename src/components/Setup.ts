@@ -108,7 +108,8 @@ export class SetupPage extends LitElement{
   updated(change: PropertyValues): void {
     super.updated(change);
     if (change.has('_chatGpt') && this._chatGpt) {
-			this._getColours();
+			// this._getColours();
+			this._getDoodles();
     }
   }
 
@@ -120,17 +121,18 @@ export class SetupPage extends LitElement{
 	}
 
 	/** Generate the doodles and start the visualizer */
-  async _getDoodles(ev: MouseEvent) {
-		const target = ev.target as HTMLElement;
-		const paletteElement = target.closest('.palette');
-		const idx = paletteElement?.getAttribute('data-idx');
-		if (!paletteElement || !idx || isNaN(Number(idx))) {
-			return;
-		}
-		const palette = this._colours[Number(idx)];
+  async _getDoodles(ev?: MouseEvent) {
+		// const target = ev.target as HTMLElement;
+		// const paletteElement = target.closest('.palette');
+		// const idx = paletteElement?.getAttribute('data-idx');
+		// if (!paletteElement || !idx || isNaN(Number(idx))) {
+		// 	return;
+		// }
+		// const palette = this._colours[Number(idx)];
 		
 		this._loading = 2;
-		const css = await this._chatGpt.generateCss(palette.colours, 10);
+		const css = await this._chatGpt.generateCss();
+		// const css = await this._chatGpt.generateCss(palette.colours, 10);
 		const doodles = this._createDoodles(css);
 		this._loading = 0;
 
@@ -141,7 +143,8 @@ export class SetupPage extends LitElement{
 		}
 
 		this.settings = {
-			background: palette.background,
+			background: '#000000',
+			// background: palette.background,
 			doodles
 		};
 		this.dispatchEvent(new CustomEvent('its-time'));
