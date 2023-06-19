@@ -1,6 +1,13 @@
 import { css, customElement, html, internalProperty, LitElement, property } from "lit-element";
-import { DrumPattern, pattern1 } from "../DrumMachine";
+import { Drum, DrumPattern, pattern1 } from "../DrumMachine";
 import { defaultStyles } from "../defaultStyles";
+import { styleMap } from 'lit-html/directives/style-map';
+import { RandomElement } from "../Randomizer";
+
+const letters = [
+  'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+];
+
 /**
  * a full screen loading page with randomly generated letters
  * that fade in and out, like a wave
@@ -12,76 +19,84 @@ export class DrumEditor extends LitElement{
 		defaultStyles,
 		css`
 		:host {
-			position: absolute;
-			top: 0;
 			height: 100%;
 			width: 100%;
 			display: flex;
 			justify-content: center;
 			align-items: center;
 			opacity: 0.7;
+      color: white;
 		}
-		.container {
-			cursor: default;
-		}
-		.grid {
-			display: flex;
-			gap: 5px;
-		}
-		.col {
-			display: flex;
-			flex-direction: column;
-			gap: 5px;
-		}
-		.drum-pad {
-			height: 100px;
-			width: 50px;
-			background: whitesmoke;
-			opacity: 0.5;
-		}
-		.drum-pad[data-on] {
-			opacity: 0.8;
-		}
-		.drum-pad[data-current-beat] {
-			opacity: 0.6;
-		}
-		.drum-pad[data-on][data-current-beat] {
-			opacity: 0.9;
-		}
+    mwc-icon {
+      cursor: pointer
+    }
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 100px;
+    }
+    .elem {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    select {
+      width: 70px;
+      text-align: center;
+      font-size: 100%;
+    }
+    .elem .mwc-icon {
+
+    }
+
 		`
 	];
 
-	@property() currentBeat?: number;
-	@internalProperty() drumPattern: DrumPattern = pattern1;
+	@property() drum: Drum;
 
-	_settingsChanged() {
-		this.dispatchEvent(new CustomEvent<DrumPattern>(
-							'settings-changed', {detail: this.drumPattern}));
+	_changeLetter(ev: Event) {
+    const select = ev.target as HTMLSelectElement;
+    const idx = Number(select.getAttribute('data-idx'));
+    this.drum[idx].letter = select.value;
+
+		this.dispatchEvent(new CustomEvent<Drum>(
+							'drum-changed', {detail: this.drum}));
 	}
 
-	_toggleDrum(x: number, y: number) {
-		this.drumPattern[x][y] = !this.drumPattern[x][y];
-		this.drumPattern = [...this.drumPattern];
+  _addNew() {
+    this.drum.push({letter: RandomElement(letters)})
+    this.drum = [...this.drum]
 
-		this._settingsChanged()
-	}
+		this.dispatchEvent(new CustomEvent<Drum>(
+      'drum-changed', {detail: this.drum}));
+  }
+
+  _removePad(idx: number) {
+    this.drum = this.drum.splice(idx, 1);
+  }
+
+  _back() {
+    this.dispatchEvent(new Event('back'));
+  }
 
 	render() {
-		const columns = this.drumPattern.map((beat, x) => {
-			const instrumentColumn = beat.map((drumPad, y) => 
-				html`
-					<div class='drum-pad' 
-						?data-on=${drumPad}
-						?data-current-beat=${x+1 == this.currentBeat}
-						@click=${() => this._toggleDrum(x, y)}
-					></div>`
-			)
-			return html`<div class='col'>${instrumentColumn}</div>`;
-		});
+
+
+    const existingDrums = this.drum.map((drum, idx) => 
+      html`<div class='elem'>
+        <select @change=${this._changeLetter} data-idx=${idx}>
+          ${letters.map(l => html`<option .value=${l} ?selected=${l == drum.letter}>${l}</option>`)}
+        </select>
+        <mwc-icon @click=${() => this._removePad(idx)}>close</mwc-icon>
+      </div>`
+    )
 
 		return html`
-			<div class='container'>
-				<div class='grid'>${columns}</div>
+			<div class='form'>
+        <mwc-icon @click=${this._back}>keyboard_backspace</mwc-icon>
+        ${existingDrums}
+        <mwc-icon @click=${this._addNew}>add</mwc-icon>
 			</div>
 		`;
 	}

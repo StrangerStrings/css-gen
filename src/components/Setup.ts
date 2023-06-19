@@ -5,7 +5,7 @@ import { styleMap } from 'lit-html/directives/style-map';
 import { CssBits, Doodle, Palette } from "../types";
 import { RandomElement } from "../Randomizer";
 
-const apiKey = "";
+const apiKey = "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";
 
 /**
  * Setup page for choosing colours and generating doodles
@@ -93,6 +93,8 @@ export class SetupPage extends LitElement{
 	_inspiration: string[] = [];
 	/** If true, downloads CSS information. Useful for debugging css parsing issues */
 	_debugMode: boolean = false;
+
+	
 
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -243,6 +245,7 @@ export class SetupPage extends LitElement{
 
 	render() {
 		if (this._loading == 2) {
+			// todo: can time just be 4
 			return html`
 				<loading-letters
 					time=${4}

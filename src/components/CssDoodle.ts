@@ -43,6 +43,9 @@ export class CssDoodle extends LitElement{
 				100% {
 					opacity: 0;
 				}
+				100% {
+					// display: none;
+				}
 			}
 		`
 	];

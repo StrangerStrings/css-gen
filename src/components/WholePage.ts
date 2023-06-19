@@ -1,18 +1,21 @@
 import { css, customElement, html, internalProperty, LitElement }
-	from "lit-element";
-import {defaultStyles} from '../defaultStyles';
+from "lit-element";
+import '@material/mwc-icon';
 import { styleMap } from 'lit-html/directives/style-map';
-
+	
+import {defaultStyles} from '../defaultStyles';
 import './CssDoodle';
 import './Setup';
 import './ApiInput';
 import './LoadingLetters';
+import './PatternEditor';
 import './DrumEditor';
 import { SetupPage } from "./Setup";
 import { Doodle } from "../types";
 import { Random } from "../Randomizer";
 import { Metronome } from "../Metronome";
-import { DrumMachine, DrumPattern } from "../DrumMachine";
+import { Drum, DrumMachine, DrumPattern } from "../DrumMachine";
+import { PatternEditor } from "./PatternEditor";
 
 @customElement('whole-page')
 /**
@@ -56,13 +59,13 @@ export class WholePage extends LitElement {
 	
 	constructor() {
 		super();
-		this.metronome = new Metronome(120, (beat: number) => this._beat(beat));
+		this.metronome = new Metronome(240, (beat: number) => this._beat(beat));
 		this.drumMachine = new DrumMachine();
 	}
 
 	connectedCallback(): void {
 		super.connectedCallback();
-  	window.addEventListener('keyup', this._keyDoodle.bind(this));
+  	window.addEventListener('keyup', this._onKeyPress.bind(this));
 	}
 
 	_start (ev: Event) {
@@ -73,18 +76,30 @@ export class WholePage extends LitElement {
 		this.metronome.start();
 	}
 
-	_keyDoodle(ev: KeyboardEvent) {
+	_onKeyPress(ev: KeyboardEvent) {
 		if (ev.key == ' ') {
 			this.metronome.stopstart();
 			this._currentBeat = undefined;
 			return;
 		}
+
+		const shift = ev.shiftKey ? 0.07 : (ev.altKey ? 1 : 0.23) ;
 		if (ev.key == 'ArrowLeft') {
-			this.metronome.shift(-0.22);
+			this.metronome.shift(-shift);
 			return;
 		}
 		if (ev.key == 'ArrowRight') {
-			this.metronome.shift(0.22);
+			this.metronome.shift(shift);
+			return;
+		}
+
+		const tempoChange = ev.shiftKey ? 0.1 : 1;
+		if (ev.key == 'ArrowDown') {
+			this.metronome.changeBpm(-tempoChange);
+			return;
+		}
+		if (ev.key == 'ArrowUp') {
+			this.metronome.changeBpm(tempoChange);
 			return;
 		}
 		
@@ -92,19 +107,39 @@ export class WholePage extends LitElement {
 			this._showDrumEditor = !this._showDrumEditor
 			return;
 		}
+
+		if (ev.key == ']') {
+			this.drumMachine.doublePatternLength();
+			const editor = this.shadowRoot.querySelector<PatternEditor>('pattern-editor');
+			editor.drumPattern = this.drumMachine.pattern;
+			const beatsInLoop = this.metronome._beatsInLoop;
+			this.metronome.beatsInLoop(beatsInLoop * 2);
+			return;
+		}
+
+		if (ev.key == '[') {
+			this.drumMachine.halfPatternLength();
+			const editor = this.shadowRoot.querySelector<PatternEditor>('pattern-editor');
+			editor.drumPattern = this.drumMachine.pattern;
+			const beatsInLoop = this.metronome._beatsInLoop;
+			this.metronome.beatsInLoop(beatsInLoop / 2);
+			return;
+		}
+
 		
 		this._dooDle(ev.key);
 	}
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
 	_dooDle(letter: string) {
-		const newDoodle = this._createDoodle(letter);
-		if (!newDoodle) {
+		let doodle = this.doodlesPool.find(ky => ky.letter == letter);
+		if (!doodle) {
 			return;
 		}
+		doodle = this._alterPosition(doodle);
 		
 		const doodlesBatch = this._getCurrentBatch();
-		doodlesBatch.push(newDoodle);
+		doodlesBatch.push(doodle);
 
 		if (doodlesBatch.length >= this.maxDoodles) {
 			this._switchBatchAndClearDoodles();
@@ -114,11 +149,9 @@ export class WholePage extends LitElement {
 		this.doodles2 = [...this.doodles2];
 	}
 
-	_createDoodle(key: string): Doodle|undefined {
-		const doodle = this.doodlesPool.find(ky => ky.letter == key);
-
-		// changing it's position randomly with each key press
-		// but keeping it 'magnetically' drawn to it's initial position (maths yo)
+	/** Changing it's position randomly with each key press
+		whilst keeping it 'magnetically' drawn to it's initial position (maths yo) */
+	_alterPosition(doodle: Doodle): Doodle {
 		const variance = 8;
 
 		const xMovement = doodle.xInitial - doodle.x;
@@ -149,6 +182,10 @@ export class WholePage extends LitElement {
 		this.drumMachine.pattern = ev.detail;
 	}
 
+	_instrumentsChanged(ev: CustomEvent<Drum[]>) {
+		this.drumMachine.drums = ev.detail;
+	}
+
 	_beat(beat: number) {
 		this._currentBeat = beat;
 
@@ -175,11 +212,12 @@ export class WholePage extends LitElement {
 				${doodles1}
 				${doodles2}
 			</div>
-			<drum-editor
+			<pattern-editor
 				?hidden=${!this._showDrumEditor}
 				@settings-changed=${this._drumMachineChanged}
 				currentBeat=${this._currentBeat}
-			></drum-editor>
+				@instruments-changed=${this._instrumentsChanged}
+			></pattern-editor>
 			`;
 	}
 }
