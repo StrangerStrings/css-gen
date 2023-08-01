@@ -14,7 +14,7 @@ import { SetupPage } from "./Setup";
 import { Doodle } from "../types";
 import { Random } from "../Randomizer";
 import { Metronome } from "../Metronome";
-import { Drum, DrumMachine, DrumPattern } from "../DrumMachine";
+import { Drum, DrumMachine, DrumPattern, Pad } from "../DrumMachine";
 import { PatternEditor } from "./PatternEditor";
 
 @customElement('whole-page')
@@ -127,12 +127,12 @@ export class WholePage extends LitElement {
 		}
 
 		
-		this._dooDle(ev.key);
+		this._dooDle({letter: ev.key});
 	}
 
 	/** Main function: Creates new doodle, adds it to the screen, manages batches */
-	_dooDle(letter: string) {
-		let doodle = this.doodlesPool.find(ky => ky.letter == letter);
+	_dooDle(drum: Pad) {
+		let doodle = this._getDoodle(drum)
 		if (!doodle) {
 			return;
 		}
@@ -147,6 +147,12 @@ export class WholePage extends LitElement {
 
 		this.doodles1 = [...this.doodles1];
 		this.doodles2 = [...this.doodles2];
+	}
+
+	_getDoodle(drum: Pad): Doodle|undefined {
+		// if (drum.type)
+		let doodle = this.doodlesPool.find(ky => ky.letter == drum.letter);
+		return doodle;
 	}
 
 	/** Changing it's position randomly with each key press
@@ -191,7 +197,7 @@ export class WholePage extends LitElement {
 
 		const drumsToPlay = this.drumMachine.onthebeat(beat);
 		for (const drum of drumsToPlay) {
-			this._dooDle(drum.letter);
+			this._dooDle(drum);
 		}
 	}
 

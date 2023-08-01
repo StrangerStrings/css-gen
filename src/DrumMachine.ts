@@ -1,9 +1,22 @@
 export type DrumPattern = boolean[][];
 
 
-export type Pad = {
+export interface PadBase {
+  type?: string;
+}
+
+export interface ChatGptPad extends PadBase {
   letter: string;
 }
+
+export interface ChatGptPad2 extends PadBase {
+  letter: string;
+  g: string;
+}
+
+export type Pad = ChatGptPad | ChatGptPad2;
+
+
 export type Drum = Pad[]
 
 export const pattern1 = [
